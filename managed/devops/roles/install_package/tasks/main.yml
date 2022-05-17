@@ -117,3 +117,17 @@
   tags:
     - install-software
     - yb-prebuilt-ami
+
+- name: Install linux packages we need on our YugaByte clusters on CentOS
+  become: yes
+  become_method: sudo
+  yum:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - "{{ new_install_packages }}"
+  register: result
+  until: result is succeeded
+  tags:
+    - new-update-software

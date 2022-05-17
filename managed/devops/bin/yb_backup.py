@@ -83,6 +83,8 @@ SLEEP_IN_REPLICAS_SEARCHING_ROUND_SEC = 20  # 30*20 sec = 10 minutes
 
 CREATE_SNAPSHOT_TIMEOUT_SEC = 60 * 60  # hour
 RESTORE_SNAPSHOT_TIMEOUT_SEC = 24 * 60 * 60  # day
+XXH64HASH_TOOL_PATH = '/usr/bin/xxh64sum'
+XXH64_FILE_EXT = 'xxh64'
 SHA_TOOL_PATH = '/usr/bin/sha256sum'
 SHA_FILE_EXT = 'sha256'
 # Try to read home dir from environment variable, else assume it's /home/yugabyte.
@@ -814,6 +816,7 @@ class YBManifest:
         properties['start-time'] = self.backup.timer.start_time_str()
         properties['end-time'] = self.backup.timer.end_time_str()
         properties['size-in-bytes'] = self.backup.calc_size_in_bytes(snapshot_bucket)
+        properties['hash-algorithm'] = "XXH64SUM"
 
     def init_locations(self, tablet_leaders, snapshot_bucket):
         locations = self.body['locations']
@@ -881,6 +884,13 @@ class YBManifest:
     def get_locations(self):
         return self.body['locations'].keys()
 
+    def get_hash_algorithm(self):
+        hash_algorithm = "XXH64SUM"
+        if 'properties' in self.body:
+            hash_algorithm = self.body['properties'].get('hash-algorithm')
+            if hash_algorithm is None:
+                hash_algorithm = "SHA-256"
+        return hash_algorithm
 
 class YBBackup:
     def __init__(self):
@@ -2215,6 +2225,10 @@ class YBBackup:
         return tserver_ip_to_tablet_id_to_snapshot_dirs
 
     def create_checksum_cmd_not_quoted(self, file_path, checksum_file_path):
+        # prefix = None
+        # if self.manifest.get_hash_algorithm() == "XXH64SUM":
+        #     prefix = pipes.quote(XXH64HASH_TOOL_PATH) if not self.args.mac else '/usr/bin/xxhsum'
+        # else:
         prefix = pipes.quote(SHA_TOOL_PATH) if not self.args.mac else '/usr/bin/shasum'
         return "{} {} > {}".format(prefix, file_path, checksum_file_path)
 

@@ -24,3 +24,6 @@ aarch64_packages:
 debian_aarch64_packages:
   - libatomic1
   - libncurses6
+
+new_install_packages: []
+  # - xxhash 
