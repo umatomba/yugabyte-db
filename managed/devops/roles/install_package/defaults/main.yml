@@ -13,4 +13,4 @@ num_retries: 5
 retry_delay: 10
 
 new_install_packages:
-  - xxhash 
+  - xxhash

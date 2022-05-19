@@ -346,14 +346,6 @@ def strip_dir(dir_path):
     return dir_path.rstrip('/\\')
 
 
-def checksum_path(file_path):
-    return file_path + '.' + SHA_FILE_EXT
-
-
-def checksum_path_downloaded(file_path):
-    return checksum_path(file_path) + '.downloaded'
-
-
 # TODO: get rid of this sed / test program generation in favor of a more maintainable solution.
 def key_and_file_filter(checksum_file):
     return "\" $( sed 's| .*/| |' {} ) \"".format(pipes.quote(checksum_file))
@@ -791,7 +783,7 @@ class YBManifest:
         self.body['version'] = "0"
 
     # Data initialization methods.
-    def init(self, snapshot_bucket, pg_based_backup):
+    def init(self, snapshot_bucket, pg_based_backup, xxh64sum_binary_present):
         # Call basic initialization by default to prevent code duplication.
         self.create_by_default(self.backup.snapshot_location(snapshot_bucket))
         self.body['version'] = "1.0"
@@ -816,7 +808,7 @@ class YBManifest:
         properties['start-time'] = self.backup.timer.start_time_str()
         properties['end-time'] = self.backup.timer.end_time_str()
         properties['size-in-bytes'] = self.backup.calc_size_in_bytes(snapshot_bucket)
-        properties['hash-algorithm'] = "XXH64SUM"
+        properties['hash-algorithm'] = "XXH64SUM" if xxh64sum_binary_present else "SHA-256"
 
     def init_locations(self, tablet_leaders, snapshot_bucket):
         locations = self.body['locations']
@@ -2224,22 +2216,51 @@ class YBBackup:
 
         return tserver_ip_to_tablet_id_to_snapshot_dirs
 
+    def xxh64bin_present(self):
+        try:
+            ssh_key_path = self.args.ssh_key_path
+            if self.ip_to_ssh_key_map:
+                ssh_key_path = self.ip_to_ssh_key_map.get(self.get_main_host_ip(), ssh_key_path)
+            self.run_program([
+                'ssh',
+                '-o', 'StrictHostKeyChecking=no',
+                '-o', 'UserKnownHostsFile=/dev/null',
+                '-o', 'ControlMaster=auto',
+                '-o', 'ControlPath=~/.ssh/ssh-%r@%h:%p',
+                '-o', 'ControlPersist=1m',
+                '-i', ssh_key_path,
+                '-p', self.args.ssh_port,
+                '-q',
+                '%s@%s' % (self.args.ssh_user, self.get_main_host_ip()),
+                'command -v /usr/bin/xxh64sum /dev/null'
+            ])
+            self.xxh64sum_binary_present = True
+        except subprocess.CalledProcessError as e:
+            self.xxh64sum_binary_present = False
+
     def create_checksum_cmd_not_quoted(self, file_path, checksum_file_path):
-        # prefix = None
-        # if self.manifest.get_hash_algorithm() == "XXH64SUM":
-        #     prefix = pipes.quote(XXH64HASH_TOOL_PATH) if not self.args.mac else '/usr/bin/xxhsum'
-        # else:
-        prefix = pipes.quote(SHA_TOOL_PATH) if not self.args.mac else '/usr/bin/shasum'
+        prefix = None
+        if self.xxh64sum_binary_present and self.manifest is not None and self.manifest.get_hash_algorithm() == "XXH64SUM":
+            prefix = pipes.quote(XXH64HASH_TOOL_PATH) if not self.args.mac else '/usr/bin/xxhsum'
+        else:
+            prefix = pipes.quote(SHA_TOOL_PATH) if not self.args.mac else '/usr/bin/shasum'
         return "{} {} > {}".format(prefix, file_path, checksum_file_path)
 
     def create_checksum_cmd(self, file_path, checksum_file_path):
         return self.create_checksum_cmd_not_quoted(
             pipes.quote(file_path), pipes.quote(checksum_file_path))
 
+    def checksum_path(self, file_path):
+        ext = XXH64_FILE_EXT if self.xxh64sum_binary_present else SHA_FILE_EXT
+        return file_path + '.' + ext
+
+    def checksum_path_downloaded(self, file_path):
+        return self.checksum_path(file_path) + '.downloaded'
+
     def create_checksum_cmd_for_dir(self, dir_path):
         return self.create_checksum_cmd_not_quoted(
             os.path.join(pipes.quote(strip_dir(dir_path)), '[!i]*'),
-            pipes.quote(checksum_path(strip_dir(dir_path))))
+            pipes.quote(self.checksum_path(strip_dir(dir_path))))
 
     def prepare_upload_command(self, parallel_commands, snapshot_filepath, tablet_id,
                                tserver_ip, snapshot_dir):
@@ -2258,8 +2279,8 @@ class YBBackup:
                          snapshot_dir, tserver_ip))
             create_checksum_cmd = self.create_checksum_cmd_for_dir(snapshot_dir)
 
-            target_checksum_filepath = checksum_path(target_tablet_filepath)
-            snapshot_dir_checksum = checksum_path(strip_dir(snapshot_dir))
+            target_checksum_filepath = self.checksum_path(target_tablet_filepath)
+            snapshot_dir_checksum = self.checksum_path(strip_dir(snapshot_dir))
             logging.info('Uploading %s from tablet server %s to %s URL %s' % (
                          snapshot_dir_checksum, tserver_ip, self.args.storage_type,
                          target_checksum_filepath))
@@ -2303,9 +2324,9 @@ class YBBackup:
         # Download the data to a tmp directory and then move it in place.
         cmd = self.storage.download_dir_cmd(source_filepath, snapshot_dir_tmp)
 
-        source_checksum_filepath = checksum_path(
+        source_checksum_filepath = self.checksum_path(
             os.path.join(snapshot_filepath, 'tablet-%s' % (old_tablet_id)))
-        snapshot_dir_checksum = checksum_path_downloaded(strip_dir(snapshot_dir))
+        snapshot_dir_checksum = self.checksum_path_downloaded(strip_dir(snapshot_dir))
         cmd_checksum = self.storage.download_file_cmd(
             source_checksum_filepath, snapshot_dir_checksum)
 
@@ -2314,7 +2335,7 @@ class YBBackup:
         # chain to be retried.
         check_checksum_cmd = compare_checksums_cmd(
             snapshot_dir_checksum,
-            checksum_path(strip_dir(snapshot_dir_tmp)),
+            self.checksum_path(strip_dir(snapshot_dir_tmp)),
             error_on_failure=True)
 
         rmcmd = ['rm', '-rf', snapshot_dir]
@@ -2493,8 +2514,8 @@ class YBBackup:
         :param src_path: local metadata file path
         :param dest_path: destination metadata file path
         """
-        src_checksum_path = checksum_path(src_path)
-        dest_checksum_path = checksum_path(dest_path)
+        src_checksum_path = self.checksum_path(src_path)
+        dest_checksum_path = self.checksum_path(dest_path)
 
         if self.args.local_yb_admin_binary:
             if not os.path.exists(src_path):
@@ -2681,7 +2702,7 @@ class YBBackup:
         :param tablet_leaders: a list of (tablet_id, tserver_ip, tserver_region) tuples
         :param snapshot_bucket: the bucket directory under which to upload the data directories
         """
-        self.manifest.init(snapshot_bucket, pg_based_backup)
+        self.manifest.init(snapshot_bucket, pg_based_backup, self.xxh64sum_binary_present)
         if not pg_based_backup:
             self.manifest.init_locations(tablet_leaders, snapshot_bucket)
 
@@ -2815,24 +2836,24 @@ class YBBackup:
         """
         if self.args.local_yb_admin_binary:
             if not self.args.disable_checksums:
-                checksum_downloaded = checksum_path_downloaded(target_path)
+                checksum_downloaded = self.checksum_path_downloaded(target_path)
                 self.run_program(
-                    self.storage.download_file_cmd(checksum_path(src_path), checksum_downloaded))
+                    self.storage.download_file_cmd(self.checksum_path(src_path), checksum_downloaded))
             self.run_program(
                 self.storage.download_file_cmd(src_path, target_path))
 
             if not self.args.disable_checksums:
                 self.run_program(
-                    self.create_checksum_cmd(target_path, checksum_path(target_path)))
+                    self.create_checksum_cmd(target_path, self.checksum_path(target_path)))
                 check_checksum_res = self.run_program(
-                    compare_checksums_cmd(checksum_downloaded, checksum_path(target_path))).strip()
+                    compare_checksums_cmd(checksum_downloaded, self.checksum_path(target_path))).strip()
         else:
             server_ip = self.get_main_host_ip()
 
             if not self.args.disable_checksums:
-                checksum_downloaded = checksum_path_downloaded(target_path)
+                checksum_downloaded = self.checksum_path_downloaded(target_path)
                 self.run_ssh_cmd(
-                    self.storage.download_file_cmd(checksum_path(src_path), checksum_downloaded),
+                    self.storage.download_file_cmd(self.checksum_path(src_path), checksum_downloaded),
                     server_ip)
             self.run_ssh_cmd(
                 self.storage.download_file_cmd(src_path, target_path),
@@ -2840,10 +2861,10 @@ class YBBackup:
 
             if not self.args.disable_checksums:
                 self.run_ssh_cmd(
-                    self.create_checksum_cmd(target_path, checksum_path(target_path)),
+                    self.create_checksum_cmd(target_path, self.checksum_path(target_path)),
                     server_ip)
                 check_checksum_res = self.run_ssh_cmd(
-                    compare_checksums_cmd(checksum_downloaded, checksum_path(target_path)),
+                    compare_checksums_cmd(checksum_downloaded, self.checksum_path(target_path)),
                     server_ip).strip()
 
         if (not self.args.disable_checksums) and check_checksum_res != 'correct':
@@ -3389,6 +3410,9 @@ class YBBackup:
             except Exception as ex:
                 logging.error("Cannot identify YB cluster version. Ignoring the exception: {}".
                               format(ex))
+
+            self.xxh64bin_present()
+            logging.info('xxh64sum_binary_present is {}'.format(self.xxh64sum_binary_present))
 
             if self.args.command == 'restore':
                 self.restore_table()

@@ -1026,7 +1026,7 @@ public class NodeManager extends DevopsBase {
             subcommand.add("download-software");
           } else if (taskSubType.equals(UpgradeTaskParams.UpgradeTaskSubType.Install.toString())) {
             subcommand.add("--tags");
-            subcommand.add("install-software, new-update-software");
+            subcommand.add("install-software");
           }
           subcommand.add("--num_releases_to_keep");
           if (config.getBoolean("yb.cloud.enabled")) {
