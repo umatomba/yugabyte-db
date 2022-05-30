@@ -251,7 +251,13 @@ Status FetchExistingYbctids(PgSession::ScopedRefPtr session,
                             uint64_t read_time) {
   // Group the items by the table ID.
   std::sort(ybctids->begin(), ybctids->end(), [](const auto& a, const auto& b) {
+    // TODO(dmitry): By design it is only necessary to group ybctids by table, sorting of ybctids
+    // itself is not required. But due to problem described in #12648 unsorted ybctids may produce
+    // incomplete result. Remove ybctid comparision once #12648 is fixed.
+    if (a.table_id != b.table_id) {
       return a.table_id < b.table_id;
+    }
+    return a.ybctid < b.ybctid;
   });
 
   auto arena = std::make_shared<Arena>();
@@ -1706,6 +1712,10 @@ void PgApiImpl::RegisterSysTableForPrefetching(
   } else {
     pg_sys_table_prefetcher_->Register(table_id, index_id);
   }
+}
+
+Result<bool> PgApiImpl::CheckIfPitrActive() {
+  return pg_session_->CheckIfPitrActive();
 }
 
 } // namespace pggate

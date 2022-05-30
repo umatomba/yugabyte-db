@@ -187,18 +187,6 @@ The directory to write `yb-tserver` log files.
 
 Default: Same as [`--fs_data_dirs`](#fs-data-dirs)
 
-##### --logemaillevel
-
-Email log messages logged at this level, or higher. Values: `0` (all), 1, 2, `3` (FATAL), `999` (none)
-
-Default: `999`
-
-##### --logmailer
-
-The mailer used to send logging email messages.
-
-Default: `"/bin/mail"`
-
 ##### --logtostderr
 
 Write log messages to `stderr` instead of `logfiles`.
@@ -880,6 +868,12 @@ Default: `86400`
 Stop retaining logs if the space available for the logs falls below this limit, specified in megabytes. As with `log_max_seconds_to_retain`, this flag is ignored if a log segment contains unflushed entries.
 
 Default: `102400`
+
+##### --stream_truncate_record
+
+Enable streaming of TRUNCATE record for a table on which CDC is active.
+
+Default: `false`
 
 ---
 
