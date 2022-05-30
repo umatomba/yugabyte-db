@@ -876,11 +876,12 @@ class YBManifest:
         return self.body['locations'].keys()
 
     def get_hash_algorithm(self):
-        hash_algorithm = "XXH64SUM"
+        hash_algorithm = None
         if 'properties' in self.body:
             hash_algorithm = self.body['properties'].get('hash-algorithm')
-            if hash_algorithm is None:
-                hash_algorithm = "SHA-256"
+
+        if hash_algorithm is None:
+            hash_algorithm = "SHA-256"
         return hash_algorithm
 
 class YBBackup:
