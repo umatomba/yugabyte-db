@@ -5800,7 +5800,6 @@
           "type" : "boolean"
         },
         "airGapInstall" : {
-          "description" : "Transient property - only present in mutate API request",
           "type" : "boolean"
         },
         "code" : {
@@ -5821,6 +5820,9 @@
         },
         "destVpcId" : {
           "type" : "string"
+        },
+        "details" : {
+          "$ref" : "#/definitions/ProviderDetails"
         },
         "hostVpcId" : {
           "type" : "string"
@@ -5860,7 +5862,6 @@
           "type" : "array"
         },
         "setUpChrony" : {
-          "description" : "Transient property - only present in mutate API request",
           "type" : "boolean"
         },
         "showSetUpChrony" : {
@@ -5887,7 +5888,53 @@
           "type" : "string"
         }
       },
-      "required" : [ "regions" ],
+      "required" : [ "details", "regions" ],
+      "type" : "object"
+    },
+    "ProviderDetails" : {
+      "properties" : {
+        "airGapInstall" : {
+          "type" : "boolean"
+        },
+        "deleteRemote" : {
+          "type" : "boolean"
+        },
+        "installNodeExporter" : {
+          "type" : "boolean"
+        },
+        "nodeExporterPort" : {
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "nodeExporterUser" : {
+          "type" : "string"
+        },
+        "ntpServers" : {
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "provisionInstanceScript" : {
+          "type" : "string"
+        },
+        "setUpChrony" : {
+          "type" : "boolean"
+        },
+        "showSetUpChrony" : {
+          "type" : "boolean"
+        },
+        "skipProvisioning" : {
+          "type" : "boolean"
+        },
+        "sshPort" : {
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "sshUser" : {
+          "type" : "string"
+        }
+      },
       "type" : "object"
     },
     "QueryDistributionSuggestionResponse" : {
@@ -5993,6 +6040,9 @@
         },
         "destVpcId" : {
           "type" : "string"
+        },
+        "details" : {
+          "$ref" : "#/definitions/ProviderDetails"
         },
         "hostVpcId" : {
           "type" : "string"

@@ -37,6 +37,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.validation.Constraints;
@@ -91,6 +92,11 @@ public class Provider extends Model {
   @Encrypted
   private Map<String, String> config;
 
+  @Column(nullable = false, columnDefinition = "TEXT")
+  @DbJson
+  @Encrypted
+  public ProviderDetails details;
+
   @OneToMany(cascade = CascadeType.ALL)
   @JsonManagedReference(value = "provider-regions")
   public List<Region> regions;
@@ -126,11 +132,14 @@ public class Provider extends Model {
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String sshUser = null;
 
-  // Whether provider should use airgapped install.
-  // Default: false.
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public boolean airGapInstall = false;
+  /** Whether provider should use airgapped install.
+   Default: false.
+   @deprecated - Use details.airGapInstall
+   */
+  @Deprecated
+  public void setAirGapInstall(boolean v) {
+    details.airGapInstall = v;
+  }
 
   // Port to open for connections on the instance.
   @Transient
@@ -147,10 +156,14 @@ public class Provider extends Model {
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public boolean overrideKeyValidate = false;
 
-  // Whether or not to set up NTP
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public boolean setUpChrony = false;
+  /**
+   * Whether or not to set up NTP
+   * @deprecated use details.setUpChrony
+   */
+  public boolean setSetUpChrony(boolean v) {
+    return details.setUpChrony = v;
+  }
+
 
   // NTP servers to connect to
   @Transient
@@ -181,7 +194,6 @@ public class Provider extends Model {
     return maskConfigNew(this.getUnmaskedConfig());
   }
 
-  // Get the decrypted config
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     if (config == null) return new HashMap<>();
@@ -390,13 +402,13 @@ public class Provider extends Model {
     }
 
     List<Region> regions = Region.getByProvider(this.uuid);
-    if (regions == null || regions.isEmpty()) {
+    if (regions.isEmpty()) {
       return newParams;
     }
 
     for (Region r : regions) {
       List<AvailabilityZone> zones = AvailabilityZone.getAZsForRegion(r.uuid);
-      if (zones == null || zones.isEmpty()) {
+      if (zones.isEmpty()) {
         continue;
       }
       PerRegionMetadata regionData = new PerRegionMetadata();
