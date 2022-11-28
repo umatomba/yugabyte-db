@@ -10,9 +10,16 @@
 
 package com.yugabyte.yw.models;
 
+import io.ebean.annotation.DbJson;
+import io.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
 public class ProviderDetails {
   // these are the fields in access key info that actually belong in provider
@@ -32,4 +39,14 @@ public class ProviderDetails {
   // True if it was created after, else it was created before.
   // Dictates whether or not to show the set up NTP option in the provider UI
   @ApiModelProperty public boolean showSetUpChrony = false;
+
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
+  @JsonSubTypes({
+    @Type(value = AWSCloudMetadata.class, name = "AWS")
+  })
+  public CloudMetadata cloudMetadata;
+
+  public void setCloudMetadata(CloudMetadata metadata) {
+    this.cloudMetadata = metadata;
+  }
 }

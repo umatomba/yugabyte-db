@@ -45,6 +45,7 @@ import com.yugabyte.yw.common.ShellResponse;
 import com.yugabyte.yw.forms.KubernetesProviderFormData;
 import com.yugabyte.yw.models.AccessKey;
 import com.yugabyte.yw.models.AvailabilityZone;
+import com.yugabyte.yw.models.CloudMetadata;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.CustomerTask;
 import com.yugabyte.yw.models.FileData;
@@ -403,6 +404,15 @@ public class CloudProviderHandler {
           newConfig.put(YB_FIREWALL_TAGS, ybFirewallTags);
         }
       }
+    }
+    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code);
+    provider.details.setCloudMetadata(cloudMetadata);
+    try {
+      provider.details.cloudMetadata.setConfig(newConfig);
+      System.out.println("Testing SHUBHAM");
+      provider.details.cloudMetadata.getConfig();
+    } catch(Exception e) {
+      LOG.error("Error setting the provider details", e);
     }
     provider.setConfig(newConfig);
     provider.save();

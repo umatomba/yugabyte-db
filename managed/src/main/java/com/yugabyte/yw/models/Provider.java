@@ -94,7 +94,6 @@ public class Provider extends Model {
 
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
-  @Encrypted
   public ProviderDetails details;
 
   @OneToMany(cascade = CascadeType.ALL)
@@ -250,6 +249,7 @@ public class Provider extends Model {
     provider.code = code.toString();
     provider.name = name;
     provider.setConfig(config);
+    provider.details = new ProviderDetails();
     provider.save();
     return provider;
   }
