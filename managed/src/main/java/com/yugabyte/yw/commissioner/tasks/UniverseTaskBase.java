@@ -37,6 +37,7 @@ import com.yugabyte.yw.commissioner.tasks.subtasks.CreateTable;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteBackup;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteBackupYb;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteNode;
+import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteRootVolumes;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteTableFromUniverse;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DeleteTablesFromUniverse;
 import com.yugabyte.yw.commissioner.tasks.subtasks.DestroyEncryptionAtRest;
@@ -1010,6 +1011,41 @@ public abstract class UniverseTaskBase extends AbstractTaskBase {
   }
 
   /**
+   * Creates a task to delete unused root volumes matching the tags for both the nodes and the
+   * universe. If volumeIds is not set or empty, all the matching volumes are deleted, else only the
+   * specified matching volumes are deleted.
+   *
+   * @param universe the universe to which the nodes belong.
+   * @param nodes the nodes to which the volumes were attached before.
+   * @param volumeIds the volume IDs.
+   * @return SubTaskGroup.
+   */
+  public SubTaskGroup createDeleteRootVolumesTasks(
+      Universe universe, Collection<NodeDetails> nodes, Set<String> volumeIds) {
+    SubTaskGroup subTaskGroup = getTaskExecutor().createSubTaskGroup("DeleteRootVolumes", executor);
+    for (NodeDetails node : nodes) {
+      if (node.cloudInfo == null || CloudType.onprem.name().equals(node.cloudInfo.cloud)) {
+        continue;
+      }
+      Cluster cluster = universe.getCluster(node.placementUuid);
+      DeleteRootVolumes.Params params = new DeleteRootVolumes.Params();
+      // Set the device information (numVolumes, volumeSize, etc.)
+      params.deviceInfo = cluster.userIntent.getDeviceInfoForNode(node);
+      params.azUuid = node.azUuid;
+      params.nodeName = node.nodeName;
+      params.nodeUuid = node.nodeUuid;
+      params.universeUUID = taskParams().universeUUID;
+      params.volumeIds = volumeIds;
+      params.isForceDelete = true;
+      DeleteRootVolumes task = createTask(DeleteRootVolumes.class);
+      task.initialize(params);
+      subTaskGroup.addSubTask(task);
+    }
+    getRunnableTask().addSubTaskGroup(subTaskGroup);
+    return subTaskGroup;
+  }
+
+  /**
    * Creates a task list to pause the nodes and adds to the task queue.
    *
    * @param nodes : a collection of nodes that need to be paused.
@@ -1767,7 +1803,7 @@ public abstract class UniverseTaskBase extends AbstractTaskBase {
    * @param nodes set of nodes to be stopped as master
    */
   public SubTaskGroup createStopServerTasks(
-      Collection<NodeDetails> nodes, String serverType, boolean isForceDelete) {
+      Collection<NodeDetails> nodes, String serverType, boolean isIgnoreError) {
     SubTaskGroup subTaskGroup =
         getTaskExecutor().createSubTaskGroup("AnsibleClusterServerCtl", executor);
     for (NodeDetails node : nodes) {
@@ -1784,7 +1820,7 @@ public abstract class UniverseTaskBase extends AbstractTaskBase {
       params.command = "stop";
       // Set the InstanceType
       params.instanceType = node.cloudInfo.instance_type;
-      params.isForceDelete = isForceDelete;
+      params.isIgnoreError = isIgnoreError;
       // Set the systemd parameter.
       params.useSystemd = userIntent.useSystemd;
       // Create the Ansible task to get the server info.
@@ -2621,25 +2657,29 @@ public abstract class UniverseTaskBase extends AbstractTaskBase {
     if (jsonNode.isArray()) {
       jsonNode = jsonNode.get(0);
     }
-    long matchCount =
+    Map<String, JsonNode> properties =
         Streams.stream(jsonNode.fields())
-            .filter(
-                e -> {
-                  String expectedTagValue = expectedTags.get(e.getKey());
-                  if (expectedTagValue == null) {
-                    return false;
-                  }
-                  log.info(
-                      "Node: {}, Key: {}, Value: {}, Expected: {}",
-                      taskParams.nodeName,
-                      e.getKey(),
-                      e.getValue(),
-                      expectedTagValue);
-                  return expectedTagValue.equals(e.getValue().asText());
-                })
-            .limit(expectedTags.size())
-            .count();
-    return Optional.of(matchCount == expectedTags.size());
+            .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    int unmatchedCount = 0;
+    for (Map.Entry<String, String> entry : expectedTags.entrySet()) {
+      JsonNode node = properties.get(entry.getKey());
+      if (node == null || node.isNull()) {
+        continue;
+      }
+      String value = node.asText();
+      log.info(
+          "Node: {}, Key: {}, Value: {}, Expected: {}",
+          taskParams.nodeName,
+          entry.getKey(),
+          value,
+          entry.getValue());
+      if (!entry.getValue().equals(value)) {
+        unmatchedCount++;
+      }
+    }
+    // Old nodes don't have tags. So, unmatched count is 0.
+    // New nodes must have unmatched count = 0.
+    return Optional.of(unmatchedCount == 0);
   }
 
   // Perform preflight checks on the given node.
