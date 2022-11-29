@@ -133,7 +133,11 @@ public abstract class DevopsBase {
       commandList.add(region.provider.code);
       commandList.add("--region");
       commandList.add(region.code);
-      extraVars.putAll(region.provider.getUnmaskedConfig());
+      try {
+        extraVars.putAll(region.provider.details.cloudMetadata.getEnvVars());
+      } catch (Exception e) {
+        log.error("Failed to retrieve env variables for the provider", e);
+      }
     } else if (providerUUID != null) {
       provider = Provider.get(providerUUID);
       commandList.add(provider.code);

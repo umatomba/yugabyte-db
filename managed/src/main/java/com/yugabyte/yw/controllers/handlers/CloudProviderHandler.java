@@ -409,9 +409,7 @@ public class CloudProviderHandler {
     provider.details.setCloudMetadata(cloudMetadata);
     try {
       provider.details.cloudMetadata.setConfig(newConfig);
-      System.out.println("Testing SHUBHAM");
-      provider.details.cloudMetadata.getConfig();
-    } catch(Exception e) {
+    } catch (Exception e) {
       LOG.error("Error setting the provider details", e);
     }
     provider.setConfig(newConfig);

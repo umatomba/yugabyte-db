@@ -131,9 +131,10 @@ public class Provider extends Model {
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String sshUser = null;
 
-  /** Whether provider should use airgapped install.
-   Default: false.
-   @deprecated - Use details.airGapInstall
+  /**
+   * Whether provider should use airgapped install. Default: false.
+   *
+   * @deprecated - Use details.airGapInstall
    */
   @Deprecated
   public void setAirGapInstall(boolean v) {
@@ -157,12 +158,12 @@ public class Provider extends Model {
 
   /**
    * Whether or not to set up NTP
+   *
    * @deprecated use details.setUpChrony
    */
   public boolean setSetUpChrony(boolean v) {
     return details.setUpChrony = v;
   }
-
 
   // NTP servers to connect to
   @Transient

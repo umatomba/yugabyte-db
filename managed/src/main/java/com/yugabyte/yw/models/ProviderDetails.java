@@ -10,8 +10,6 @@
 
 package com.yugabyte.yw.models;
 
-import io.ebean.annotation.DbJson;
-import io.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +40,8 @@ public class ProviderDetails {
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
   @JsonSubTypes({
-    @Type(value = AWSCloudMetadata.class, name = "AWS")
+    @Type(value = AWSCloudMetadata.class, name = "AWS"),
+    @Type(value = GCPCloudMetadata.class, name = "GCP")
   })
   public CloudMetadata cloudMetadata;
 
