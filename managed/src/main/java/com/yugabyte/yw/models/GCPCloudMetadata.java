@@ -44,7 +44,8 @@ public class GCPCloudMetadata implements CloudMetadata {
       envVars.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, this.gceHostProject);
       envVars.put(CloudProviderHandler.YB_FIREWALL_TAGS, this.ybFirewallTags);
       envVars.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, this.gceProject);
-      envVars.put(GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, this.googleApplicationCredentials);
+      envVars.put(
+          GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, this.googleApplicationCredentials);
     }
 
     return envVars;

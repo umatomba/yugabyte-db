@@ -165,7 +165,8 @@ public class CloudProviderHandler {
         maybeUpdateCloudProviderConfig(provider, providerConfig, anyProviderRegion);
       }
       // ToDo: Remove config read from provider object
-      CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, provider.getUnmaskedConfig());
+      CloudMetadata cloudMetadata =
+          CloudMetadata.getCloudProvider(provider.code, provider.getUnmaskedConfig());
       provider.details.setCloudMetadata(cloudMetadata);
       provider.save();
     }
@@ -229,6 +230,13 @@ public class CloudProviderHandler {
         }
       }
     }
+
+    // ToDo: Remove config read from provider object
+    CloudMetadata cloudMetadata =
+        CloudMetadata.getCloudProvider(provider.code, provider.getUnmaskedConfig());
+    provider.details.setCloudMetadata(cloudMetadata);
+    provider.save();
+
     try {
       createKubernetesInstanceTypes(customer, provider);
     } catch (PersistenceException ex) {
@@ -372,7 +380,8 @@ public class CloudProviderHandler {
     return hasKubeConfig;
   }
 
-  private Map<String, String> updateGCPProviderConfig(Provider provider, Map<String, String> config) {
+  private Map<String, String> updateGCPProviderConfig(
+      Provider provider, Map<String, String> config) {
     Map<String, String> newConfig = new HashMap<>();
     String hostProjectId = config.get(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY);
     newConfig.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, hostProjectId);
@@ -576,9 +585,11 @@ public class CloudProviderHandler {
         Map<String, String> config = provider.getUnmaskedConfig();
         config.put(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, taskParams.destVpcId);
         try {
-          provider.details.cloudMetadata.updateCloudMetadataDetails(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, taskParams.destVpcId);
+          provider.details.cloudMetadata.updateCloudMetadataDetails(
+              GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, taskParams.destVpcId);
         } catch (Exception e) {
-          LOG.error("Error setting the field " + GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY + " : " + e);
+          LOG.error(
+              "Error setting the field " + GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY + " : " + e);
         }
         provider.setConfig(config);
         provider.save();

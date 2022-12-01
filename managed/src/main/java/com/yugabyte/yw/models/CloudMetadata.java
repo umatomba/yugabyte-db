@@ -16,7 +16,8 @@ public interface CloudMetadata {
 
   public void updateCloudMetadataDetails(String key, String value) throws Exception;
 
-  public static <T extends CloudMetadata> T getCloudProvider(String configType, Map<String, String> configData) {
+  public static <T extends CloudMetadata> T getCloudProvider(
+      String configType, Map<String, String> configData) {
     CloudType cloudType = CloudType.valueOf(configType);
     switch (cloudType) {
       case aws:
@@ -26,8 +27,17 @@ public interface CloudMetadata {
         GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(configData, GCPCloudMetadata.class);
         return (T) gcpCloudMetadata;
       case azu:
-        AzureCloudMetadata azuCloudMetadata = mapper.convertValue(configData, AzureCloudMetadata.class);
+        AzureCloudMetadata azuCloudMetadata =
+            mapper.convertValue(configData, AzureCloudMetadata.class);
         return (T) azuCloudMetadata;
+      case kubernetes:
+        KubernetesMetadata kubernetesMetadata =
+            mapper.convertValue(configData, KubernetesMetadata.class);
+        return (T) kubernetesMetadata;
+      case onprem:
+        OnPremCloudMetadata onPremCloudMetadata =
+            mapper.convertValue(configData, OnPremCloudMetadata.class);
+        return (T) onPremCloudMetadata;
       default:
         throw new PlatformServiceException(BAD_REQUEST, "Unsupported cloud type");
     }

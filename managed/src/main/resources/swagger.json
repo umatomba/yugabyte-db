@@ -2602,6 +2602,18 @@
       "required" : [ "certExpiry", "certStart", "username" ],
       "type" : "object"
     },
+    "CloudMetadata" : {
+      "properties" : {
+        "envVars" : {
+          "additionalProperties" : {
+            "type" : "string"
+          },
+          "type" : "object"
+        }
+      },
+      "required" : [ "envVars" ],
+      "type" : "object"
+    },
     "CloudSpecificInfo" : {
       "description" : "Node information reported by the cloud provider",
       "properties" : {
@@ -5803,9 +5815,6 @@
           "readOnly" : true,
           "type" : "boolean"
         },
-        "airGapInstall" : {
-          "type" : "boolean"
-        },
         "code" : {
           "description" : "Provider cloud code",
           "type" : "string"
@@ -5865,9 +5874,6 @@
           },
           "type" : "array"
         },
-        "setUpChrony" : {
-          "type" : "boolean"
-        },
         "showSetUpChrony" : {
           "description" : "Transient property - only present in mutate API request",
           "type" : "boolean"
@@ -5899,6 +5905,9 @@
       "properties" : {
         "airGapInstall" : {
           "type" : "boolean"
+        },
+        "cloudMetadata" : {
+          "$ref" : "#/definitions/CloudMetadata"
         },
         "deleteRemote" : {
           "type" : "boolean"
@@ -5939,6 +5948,7 @@
           "type" : "string"
         }
       },
+      "required" : [ "cloudMetadata" ],
       "type" : "object"
     },
     "QueryDistributionSuggestionResponse" : {
@@ -6044,9 +6054,6 @@
         },
         "destVpcId" : {
           "type" : "string"
-        },
-        "details" : {
-          "$ref" : "#/definitions/ProviderDetails"
         },
         "hostVpcId" : {
           "type" : "string"

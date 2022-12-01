@@ -201,9 +201,11 @@ public class Provider extends Model {
     // Return unmasked provider details.
     ObjectMapper mapper = new ObjectMapper();
     CloudMetadata cloudConfigMetadata = this.details.cloudMetadata;
-    Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
-    if (cloudConfig != null) {
-      return cloudConfig;
+    if (cloudConfigMetadata != null) {
+      Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
+      if (cloudConfig != null) {
+        return cloudConfig;
+      }
     }
     if (config == null) return new HashMap<>();
     return config;

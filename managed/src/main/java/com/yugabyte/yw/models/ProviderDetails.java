@@ -42,7 +42,9 @@ public class ProviderDetails {
   @JsonSubTypes({
     @Type(value = AWSCloudMetadata.class, name = "aws"),
     @Type(value = GCPCloudMetadata.class, name = "gcp"),
-    @Type(value = AzureCloudMetadata.class, name = "azu")
+    @Type(value = AzureCloudMetadata.class, name = "azu"),
+    @Type(value = KubernetesMetadata.class, name = "kubernetes"),
+    @Type(value = OnPremCloudMetadata.class, name = "onprem")
   })
   public CloudMetadata cloudMetadata;
 
