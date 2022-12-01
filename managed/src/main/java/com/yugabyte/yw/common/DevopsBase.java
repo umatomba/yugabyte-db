@@ -141,7 +141,11 @@ public abstract class DevopsBase {
     } else if (providerUUID != null) {
       provider = Provider.get(providerUUID);
       commandList.add(provider.code);
-      extraVars.putAll(provider.getUnmaskedConfig());
+      try {
+        extraVars.putAll(provider.details.cloudMetadata.getEnvVars());
+      } catch (Exception e) {
+        log.error("Failed to retrieve env variables for the provider", e);
+      }
     } else if (cloudType != null) {
       commandList.add(cloudType.toString());
     } else {

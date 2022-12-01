@@ -40,8 +40,9 @@ public class ProviderDetails {
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
   @JsonSubTypes({
-    @Type(value = AWSCloudMetadata.class, name = "AWS"),
-    @Type(value = GCPCloudMetadata.class, name = "GCP")
+    @Type(value = AWSCloudMetadata.class, name = "aws"),
+    @Type(value = GCPCloudMetadata.class, name = "gcp"),
+    @Type(value = AzureCloudMetadata.class, name = "azu")
   })
   public CloudMetadata cloudMetadata;
 

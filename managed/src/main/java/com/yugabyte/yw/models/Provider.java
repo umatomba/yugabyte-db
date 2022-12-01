@@ -10,6 +10,7 @@ import static play.mvc.Http.Status.BAD_REQUEST;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.yugabyte.yw.commissioner.Common;
 import com.yugabyte.yw.commissioner.Common.CloudType;
@@ -94,6 +95,7 @@ public class Provider extends Model {
 
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
+  @Encrypted
   public ProviderDetails details;
 
   @OneToMany(cascade = CascadeType.ALL)
@@ -196,6 +198,13 @@ public class Provider extends Model {
 
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
+    // Return unmasked provider details.
+    ObjectMapper mapper = new ObjectMapper();
+    CloudMetadata cloudConfigMetadata = this.details.cloudMetadata;
+    Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
+    if (cloudConfig != null) {
+      return cloudConfig;
+    }
     if (config == null) return new HashMap<>();
     return config;
   }

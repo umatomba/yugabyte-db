@@ -4,23 +4,32 @@ import static play.mvc.Http.Status.BAD_REQUEST;
 
 import java.util.Map;
 
-import com.yugabyte.yw.commissioner.Common;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yugabyte.yw.commissioner.Common.CloudType;
 import com.yugabyte.yw.common.PlatformServiceException;
-
-import play.api.Play;
 
 public interface CloudMetadata {
 
-  public void setConfig(Map<String, String> config) throws Exception;
+  public final ObjectMapper mapper = new ObjectMapper();
 
   public Map<String, String> getEnvVars() throws Exception;
 
-  public static <T extends CloudMetadata> T getCloudProvider(String configType) {
-    if (configType.equals(Common.CloudType.aws.toString())) {
-      return (T) Play.current().injector().instanceOf(AWSCloudMetadata.class);
-    } else if (configType.equals(Common.CloudType.gcp.toString())) {
-      return (T) Play.current().injector().instanceOf(GCPCloudMetadata.class);
+  public void updateCloudMetadataDetails(String key, String value) throws Exception;
+
+  public static <T extends CloudMetadata> T getCloudProvider(String configType, Map<String, String> configData) {
+    CloudType cloudType = CloudType.valueOf(configType);
+    switch (cloudType) {
+      case aws:
+        AWSCloudMetadata awsCloudMetadata = mapper.convertValue(configData, AWSCloudMetadata.class);
+        return (T) awsCloudMetadata;
+      case gcp:
+        GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(configData, GCPCloudMetadata.class);
+        return (T) gcpCloudMetadata;
+      case azu:
+        AzureCloudMetadata azuCloudMetadata = mapper.convertValue(configData, AzureCloudMetadata.class);
+        return (T) azuCloudMetadata;
+      default:
+        throw new PlatformServiceException(BAD_REQUEST, "Unsupported cloud type");
     }
-    throw new PlatformServiceException(BAD_REQUEST, "Unsupported cloud type");
   }
 }

@@ -154,28 +154,20 @@ public class CloudProviderHandler {
     maybeUpdateVPC(provider, providerConfig);
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
-      maybeUpdateProviderConfig(provider, providerConfig, anyProviderRegion);
-      switch (provider.getCloudCode()) {
-        case aws: // Fall through to the common code.
-        case azu:
-          // TODO: Add this validation. But there is a bad test.
-          //  if (anyProviderRegion == null || anyProviderRegion.isEmpty()) {
-          //    throw new YWServiceException(BAD_REQUEST, "Must have at least one region");
-          //  }
-          String hostedZoneId = provider.getHostedZoneId();
-          if (hostedZoneId != null && hostedZoneId.length() != 0) {
-            validateAndUpdateHostedZone(provider, hostedZoneId);
-          }
-          break;
-        case kubernetes:
-          updateKubeConfig(provider, providerConfig, false);
-          try {
-            createKubernetesInstanceTypes(customer, provider);
-          } catch (PersistenceException ex) {
-            // TODO: make instance types more multi-tenant friendly...
-          }
-          break;
+      if (provider.getCloudCode().equals(kubernetes)) {
+        updateKubeConfig(provider, providerConfig, false);
+        try {
+          createKubernetesInstanceTypes(customer, provider);
+        } catch (PersistenceException ex) {
+          // TODO: make instance types more multi-tenant friendly...
+        }
+      } else {
+        maybeUpdateCloudProviderConfig(provider, providerConfig, anyProviderRegion);
       }
+      // ToDo: Remove config read from provider object
+      CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, provider.getUnmaskedConfig());
+      provider.details.setCloudMetadata(cloudMetadata);
+      provider.save();
     }
     return provider;
   }
@@ -380,40 +372,27 @@ public class CloudProviderHandler {
     return hasKubeConfig;
   }
 
-  private void updateProviderConfig(Provider provider, Map<String, String> config) {
-    Map<String, String> newConfig = new HashMap<>(config);
-    if ("gcp".equals(provider.code)) {
-      // Remove these keys to avoid generating a credentials file unnecessarily.
-      config.remove(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY);
-      String ybFirewallTags = config.remove(YB_FIREWALL_TAGS);
-      if (!config.isEmpty()) {
-        String gcpCredentialsFile =
-            accessManager.createCredentialsFile(provider.uuid, Json.toJson(config));
-        String projectId = config.get(GCPCloudImpl.PROJECT_ID_PROPERTY);
-        if (projectId != null) {
-          newConfig.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, projectId);
-        }
-        String clientEmail = config.get(GCPCloudImpl.CLIENT_EMAIL_PROPERTY);
-        if (clientEmail != null) {
-          newConfig.put(GCPCloudImpl.GCE_EMAIL_PROPERTY, clientEmail);
-        }
-        if (gcpCredentialsFile != null) {
-          newConfig.put(GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, gcpCredentialsFile);
-        }
-        if (ybFirewallTags != null) {
-          newConfig.put(YB_FIREWALL_TAGS, ybFirewallTags);
-        }
+  private Map<String, String> updateGCPProviderConfig(Provider provider, Map<String, String> config) {
+    Map<String, String> newConfig = new HashMap<>();
+    String hostProjectId = config.get(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY);
+    newConfig.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, hostProjectId);
+    String ybFirewallTags = config.remove(YB_FIREWALL_TAGS);
+    if (!config.isEmpty()) {
+      String gcpCredentialsFile =
+          accessManager.createCredentialsFile(provider.uuid, Json.toJson(config));
+      String projectId = config.get(GCPCloudImpl.PROJECT_ID_PROPERTY);
+      if (projectId != null) {
+        newConfig.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, projectId);
+      }
+      if (gcpCredentialsFile != null) {
+        newConfig.put(GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, gcpCredentialsFile);
+      }
+      if (ybFirewallTags != null) {
+        newConfig.put(YB_FIREWALL_TAGS, ybFirewallTags);
       }
     }
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code);
-    provider.details.setCloudMetadata(cloudMetadata);
-    try {
-      provider.details.cloudMetadata.setConfig(newConfig);
-    } catch (Exception e) {
-      LOG.error("Error setting the provider details", e);
-    }
-    provider.setConfig(newConfig);
-    provider.save();
+
+    return newConfig;
   }
 
   public void createKubernetesInstanceTypes(Customer customer, Provider provider) {
@@ -596,6 +575,11 @@ public class CloudProviderHandler {
         // config is loaded up as env vars anyway, might as well use in in devops like that...
         Map<String, String> config = provider.getUnmaskedConfig();
         config.put(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, taskParams.destVpcId);
+        try {
+          provider.details.cloudMetadata.updateCloudMetadataDetails(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, taskParams.destVpcId);
+        } catch (Exception e) {
+          LOG.error("Error setting the field " + GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY + " : " + e);
+        }
         provider.setConfig(config);
         provider.save();
       } else if (provider.code.equals("aws")) {
@@ -708,7 +692,7 @@ public class CloudProviderHandler {
     boolean updatedHostedZone =
         maybeUpdateHostedZone(provider, editProviderReq.hostedZoneId, regionsToAdd);
     boolean updatedProviderConfig =
-        maybeUpdateProviderConfig(provider, unmaskedConfig, anyProviderRegion);
+        maybeUpdateCloudProviderConfig(provider, unmaskedConfig, anyProviderRegion);
     boolean updatedKubeConfig = maybeUpdateKubeConfig(provider, unmaskedConfig);
     return updatedHostedZone || updatedProviderConfig || updatedKubeConfig;
   }
@@ -827,7 +811,7 @@ public class CloudProviderHandler {
     return (hostInfo != null && !hostInfo.isEmpty() && !hostInfo.has("error"));
   }
 
-  private boolean maybeUpdateProviderConfig(
+  private boolean maybeUpdateCloudProviderConfig(
       Provider provider, Map<String, String> providerConfig, String anyProviderRegion) {
     if (MapUtils.isEmpty(providerConfig)) {
       return false;
@@ -837,7 +821,25 @@ public class CloudProviderHandler {
       throw new PlatformServiceException(
           BAD_REQUEST, String.format("Invalid %s Credentials.", provider.code.toUpperCase()));
     }
-    updateProviderConfig(provider, providerConfig);
+    Map<String, String> newConfig = providerConfig;
+    switch (provider.getCloudCode()) {
+      case aws: // Fall through to the common code.
+      case azu:
+        // TODO: Add this validation. But there is a bad test.
+        //  if (anyProviderRegion == null || anyProviderRegion.isEmpty()) {
+        //    throw new YWServiceException(BAD_REQUEST, "Must have at least one region");
+        //  }
+        String hostedZoneId = provider.getHostedZoneId();
+        if (hostedZoneId != null && hostedZoneId.length() != 0) {
+          validateAndUpdateHostedZone(provider, hostedZoneId);
+        }
+        break;
+      case gcp:
+        newConfig = updateGCPProviderConfig(provider, providerConfig);
+        break;
+    }
+    provider.setConfig(newConfig);
+    provider.save();
     return true;
   }
 
