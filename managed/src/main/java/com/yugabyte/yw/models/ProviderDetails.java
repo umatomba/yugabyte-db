@@ -55,8 +55,7 @@ public class ProviderDetails {
 
   public static ProviderDetails getProviderDetails(Map<String, String> config, String code) {
     ProviderDetails providerDetails = new ProviderDetails();
-    CloudMetadata cloudMetadata =
-          CloudMetadata.getCloudProvider(code, config);
+    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(code, config);
     providerDetails.setCloudMetadata(cloudMetadata);
     return providerDetails;
   }

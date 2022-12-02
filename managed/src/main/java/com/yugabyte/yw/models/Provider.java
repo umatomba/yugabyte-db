@@ -88,6 +88,8 @@ public class Provider extends Model {
     this.customerUUID = id;
   }
 
+  /** @deprecated - Use details.cloudMetadata */
+  @Deprecated
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
   @Encrypted
