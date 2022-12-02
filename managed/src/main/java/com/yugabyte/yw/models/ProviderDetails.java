@@ -13,6 +13,7 @@ package com.yugabyte.yw.models;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -50,5 +51,13 @@ public class ProviderDetails {
 
   public void setCloudMetadata(CloudMetadata metadata) {
     this.cloudMetadata = metadata;
+  }
+
+  public static ProviderDetails getProviderDetails(Map<String, String> config, String code) {
+    ProviderDetails providerDetails = new ProviderDetails();
+    CloudMetadata cloudMetadata =
+          CloudMetadata.getCloudProvider(code, config);
+    providerDetails.setCloudMetadata(cloudMetadata);
+    return providerDetails;
   }
 }

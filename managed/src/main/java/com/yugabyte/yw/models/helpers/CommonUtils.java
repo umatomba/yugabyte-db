@@ -19,9 +19,6 @@ import com.yugabyte.yw.common.PlatformServiceException;
 import com.yugabyte.yw.common.ShellResponse;
 import com.yugabyte.yw.common.utils.Pair;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams;
-import com.yugabyte.yw.models.CloudMetadata;
-import com.yugabyte.yw.models.Provider;
-import com.yugabyte.yw.models.ProviderDetails;
 import com.yugabyte.yw.models.Universe;
 import com.yugabyte.yw.models.Users;
 import com.yugabyte.yw.models.extended.UserWithFeatures;
@@ -268,17 +265,6 @@ public class CommonUtils {
       }
     }
     return new HashMap<>();
-  }
-
-  public static void populateProviderDetails(UUID providerUUID, UUID customerUUID) {
-    Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
-    // ToDo: Set the correct config.
-    provider.details = new ProviderDetails();
-
-    CloudMetadata cloudMetadata =
-          CloudMetadata.getCloudProvider(provider.code, provider.getUnmaskedConfig());
-    provider.details.setCloudMetadata(cloudMetadata);
-    provider.save();
   }
 
   public static String generateSalt(UUID customerUUID, String providerCode) {
