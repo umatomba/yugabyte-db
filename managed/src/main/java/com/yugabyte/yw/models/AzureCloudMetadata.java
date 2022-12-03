@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yugabyte.yw.cloud.gcp.GCPCloudImpl;
 
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AzureCloudMetadata implements CloudMetadata {
 
   @JsonProperty("AZURE_TENANT_ID")
@@ -53,7 +55,7 @@ public class AzureCloudMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public void updateCloudMetadataDetails(String key, String value) {
+  public void updateCloudMetadataDetails(Map<String, String> configData) {
     // pass
   }
 }

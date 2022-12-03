@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yugabyte.yw.cloud.gcp.GCPCloudImpl;
 import com.yugabyte.yw.controllers.handlers.CloudProviderHandler;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class GCPCloudMetadata implements CloudMetadata {
 
   @JsonProperty(GCPCloudImpl.GCE_PROJECT_PROPERTY)
@@ -36,6 +38,14 @@ public class GCPCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String ybFirewallTags;
 
+  @JsonProperty("use_host_vpc")
+  @ApiModelProperty
+  public String useHostVPC;
+
+  @JsonProperty("project_id")
+  @ApiModelProperty
+  public String projectId;
+
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
@@ -52,11 +62,7 @@ public class GCPCloudMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public void updateCloudMetadataDetails(String key, String value) {
-    switch (key) {
-      case GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY:
-        this.customGceNetwork = value;
-        break;
-    }
+  public void updateCloudMetadataDetails(Map<String, String> configMap) {
+    // pass
   }
 }

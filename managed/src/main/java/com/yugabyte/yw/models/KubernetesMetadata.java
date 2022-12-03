@@ -3,6 +3,7 @@ package com.yugabyte.yw.models;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class KubernetesMetadata implements CloudMetadata {
 
   @JsonProperty("KUBECONFIG_PROVIDER")
@@ -37,6 +39,10 @@ public class KubernetesMetadata implements CloudMetadata {
   @ApiModelProperty
   public String kubeConfig;
 
+  @JsonProperty("KUBECONFIG_STORAGE_CLASSES")
+  @ApiModelProperty
+  public String kubernetesStorageClass;
+
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     // pass
@@ -44,7 +50,7 @@ public class KubernetesMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public void updateCloudMetadataDetails(String key, String value) {
+  public void updateCloudMetadataDetails(Map<String, String> configData) {
     // pass
   }
 }

@@ -2,6 +2,7 @@ package com.yugabyte.yw.models;
 
 import static play.mvc.Http.Status.BAD_REQUEST;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,9 +13,14 @@ public interface CloudMetadata {
 
   public final ObjectMapper mapper = new ObjectMapper();
 
+  public final String[] gcpExtraConfigKeys = {
+    "type", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_x509_cert_url",
+    "client_id", "client_email", "GCE_EMAIL", "private_key", "private_key_id", "use_host_credentials"
+  };
+
   public Map<String, String> getEnvVars() throws Exception;
 
-  public void updateCloudMetadataDetails(String key, String value) throws Exception;
+  public void updateCloudMetadataDetails(Map<String, String> configData) throws Exception;
 
   public static <T extends CloudMetadata> T getCloudProvider(
       String configType, Map<String, String> configData) {
@@ -24,7 +30,11 @@ public interface CloudMetadata {
         AWSCloudMetadata awsCloudMetadata = mapper.convertValue(configData, AWSCloudMetadata.class);
         return (T) awsCloudMetadata;
       case gcp:
-        GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(configData, GCPCloudMetadata.class);
+        Map<String, String> newConfig = new HashMap<>(configData);
+        for (String key: gcpExtraConfigKeys) {
+          newConfig.remove(key);
+        }
+        GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(newConfig, GCPCloudMetadata.class);
         return (T) gcpCloudMetadata;
       case azu:
         AzureCloudMetadata azuCloudMetadata =

@@ -327,9 +327,8 @@ public class CloudProviderControllerTest extends FakeDBApplication {
       if (code.equals("gcp")) {
         // Technically this is not the input format of the file, but we're using this to match the
         // number of elements...
-        configFileJson.put("GCE_EMAIL", "email");
         configFileJson.put("GCE_PROJECT", "project");
-        configFileJson.put("GOOGLE_APPLICATION_CREDENTIALS", "credentials");
+        configFileJson.put("YB_FIREWALL_TAGS", "tag-1");
         configJson.put("config_file_contents", configFileJson);
       } else if (code.equals("aws")) {
         configJson.put("AWS_ACCESS_KEY_ID", "key");

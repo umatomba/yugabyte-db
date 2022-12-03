@@ -151,6 +151,8 @@ public class CloudProviderHandler {
           BAD_REQUEST, String.format("Provider with the name %s already exists", providerName));
     }
     Provider provider = Provider.create(customer.uuid, providerCode, providerName);
+    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, providerConfig);
+    provider.details.setCloudMetadata(cloudMetadata);
     providerConfig = maybeUpdateVPC(provider, providerConfig);
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
@@ -166,8 +168,7 @@ public class CloudProviderHandler {
           providerConfig = updateCloudProviderConfig(provider, providerConfig, anyProviderRegion);
         }
       }
-      // ToDo: Remove config read from provider object
-      CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, providerConfig);
+      cloudMetadata = CloudMetadata.getCloudProvider(provider.code, providerConfig);
       provider.details.setCloudMetadata(cloudMetadata);
       provider.save();
     }
@@ -403,22 +404,22 @@ public class CloudProviderHandler {
 
   private Map<String, String> updateGCPProviderConfig(
       Provider provider, Map<String, String> config) {
-    Map<String, String> newConfig = new HashMap<>();
-    String hostProjectId = config.get(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY);
+    Map<String, String> newConfig = new HashMap<>(config);
+    String hostProjectId = config.getOrDefault(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, null);
     newConfig.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, hostProjectId);
-    String ybFirewallTags = config.remove(YB_FIREWALL_TAGS);
     if (!config.isEmpty()) {
       String gcpCredentialsFile =
           accessManager.createCredentialsFile(provider.uuid, Json.toJson(config));
-      String projectId = config.get(GCPCloudImpl.PROJECT_ID_PROPERTY);
+      String projectId = config.getOrDefault(GCPCloudImpl.PROJECT_ID_PROPERTY, null);
+      newConfig.remove(GCPCloudImpl.PROJECT_ID_PROPERTY);
       if (projectId != null) {
         newConfig.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, projectId);
       }
       if (gcpCredentialsFile != null) {
         newConfig.put(GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, gcpCredentialsFile);
       }
-      if (ybFirewallTags != null) {
-        newConfig.put(YB_FIREWALL_TAGS, ybFirewallTags);
+      if (config.containsKey(YB_FIREWALL_TAGS)) {
+        newConfig.put(YB_FIREWALL_TAGS, config.get(YB_FIREWALL_TAGS));
       }
     }
 
@@ -699,7 +700,7 @@ public class CloudProviderHandler {
       String anyProviderRegion,
       Set<Region> regionsToAdd) {
     Map<String, String> unmaskedConfig = editProviderReq.getUnmaskedConfig();
-    boolean updatedHostedZone = shouldUpdateHostedZone(provider, anyProviderRegion);
+    boolean updatedHostedZone = shouldUpdateHostedZone(provider, editProviderReq.hostedZoneId);
     if (updatedHostedZone) {
       unmaskedConfig = updateHostedZone(provider, editProviderReq.hostedZoneId, unmaskedConfig);
     }
@@ -711,7 +712,13 @@ public class CloudProviderHandler {
     if (updatedKubeConfig) {
       unmaskedConfig = updateKubeConfig(provider, unmaskedConfig, updatedKubeConfig);
     }
-    return updatedHostedZone || updatedProviderConfig || updatedKubeConfig;
+    boolean updatedProviderData = updatedHostedZone || updatedProviderConfig || updatedKubeConfig;
+    if (updatedProviderData) {
+      CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, unmaskedConfig);
+      provider.details.setCloudMetadata(cloudMetadata);
+      provider.save();
+    }
+    return updatedProviderData;
   }
 
   private UUID maybeAddRegions(
@@ -783,13 +790,7 @@ public class CloudProviderHandler {
     if (MapUtils.isEmpty(providerConfig)) {
       return;
     }
-    Map<String, String> existingConfig = null;
-    if ("gcp".equalsIgnoreCase(fromProvider.code)) {
-      // For GCP, the config in the DB is derived from the credentials file.
-      existingConfig = accessManager.readCredentialsFromFile(fromProvider.uuid);
-    } else {
-      existingConfig = fromProvider.getUnmaskedConfig();
-    }
+    Map<String, String> existingConfig = fromProvider.getUnmaskedConfig();
     Set<String> unknownKeys = Sets.difference(providerConfig.keySet(), existingConfig.keySet());
     if (!unknownKeys.isEmpty()) {
       throw new PlatformServiceException(
@@ -797,7 +798,8 @@ public class CloudProviderHandler {
     }
     existingConfig = new HashMap<>(existingConfig);
     existingConfig.putAll(providerConfig);
-    toProvider.setConfig(existingConfig);
+    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(toProvider.code, existingConfig);
+    toProvider.details.setCloudMetadata(cloudMetadata);
   }
 
   private Map<String, String> maybeUpdateVPC(
@@ -818,6 +820,7 @@ public class CloudProviderHandler {
           // store it somewhere and the config is the easiest place to put it.
           // As such, since all the
           // config is loaded up as env vars anyway, might as well use in in devops like that...
+          providerConfig.remove("use_host_vpc");
           providerConfig.put(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY, network);
           providerConfig.put("GCE_HOST_PROJECT", currentHostInfo.get("host_project").asText());
           provider.save();

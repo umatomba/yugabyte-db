@@ -89,7 +89,7 @@ public class Provider extends Model {
   }
 
   /** @deprecated - Use details.cloudMetadata */
-  @Deprecated
+  // @Deprecated
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
   @Encrypted
@@ -214,8 +214,11 @@ public class Provider extends Model {
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     // Return unmasked provider details.
+    if (this.details == null) {
+      return new HashMap<>();
+    }
     ObjectMapper mapper = new ObjectMapper();
-    CloudMetadata cloudConfigMetadata = this.details.cloudMetadata;
+    CloudMetadata cloudConfigMetadata = (CloudMetadata) this.details.cloudMetadata;
     if (cloudConfigMetadata != null) {
       Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
       if (cloudConfig != null) {

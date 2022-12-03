@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 public class ProviderDetails {
   // these are the fields in access key info that actually belong in provider
   @ApiModelProperty public String sshUser;
-  @ApiModelProperty public Integer sshPort;
+  @ApiModelProperty public Integer sshPort = 22;
   @ApiModelProperty public boolean airGapInstall = false;
   @ApiModelProperty public String provisionInstanceScript = "";
   @ApiModelProperty public boolean installNodeExporter = true;
