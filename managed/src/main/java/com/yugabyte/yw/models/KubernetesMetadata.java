@@ -43,6 +43,14 @@ public class KubernetesMetadata implements CloudMetadata {
   @ApiModelProperty
   public String kubernetesStorageClass;
 
+  @JsonProperty("KUBECONFIG_PULL_SECRET_CONTENT")
+  @ApiModelProperty
+  public String kubeConfigPullSecretContent;
+
+  @JsonProperty("KUBECONFIG_PULL_SECRET_NAME")
+  @ApiModelProperty
+  public String kubeConfigPullSecretName;
+
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     // pass

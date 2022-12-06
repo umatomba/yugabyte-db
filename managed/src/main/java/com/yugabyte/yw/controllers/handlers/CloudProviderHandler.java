@@ -95,8 +95,6 @@ public class CloudProviderHandler {
               + "{\"instanceTypeCode\": \"large\", \"numCores\": 16, \"memSizeGB\": 15},"
               + "{\"instanceTypeCode\": \"xlarge\", \"numCores\": 32, \"memSizeGB\": 30}]");
 
-  private static final String STORAGE_PATH = "yb.storage.path";
-
   @Inject private Commissioner commissioner;
   @Inject private ConfigHelper configHelper;
   @Inject private AccessManager accessManager;
@@ -153,6 +151,8 @@ public class CloudProviderHandler {
     Provider provider = Provider.create(customer.uuid, providerCode, providerName);
     CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, providerConfig);
     provider.details.setCloudMetadata(cloudMetadata);
+    System.out.println("Testing the cnfig here");
+    System.out.println(providerConfig);
     providerConfig = maybeUpdateVPC(provider, providerConfig);
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
@@ -404,6 +404,8 @@ public class CloudProviderHandler {
 
   private Map<String, String> updateGCPProviderConfig(
       Provider provider, Map<String, String> config) {
+    System.out.println("Testing SHUBHAM");
+    System.out.println(config);
     Map<String, String> newConfig = new HashMap<>(config);
     String hostProjectId = config.getOrDefault(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, null);
     newConfig.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, hostProjectId);
