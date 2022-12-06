@@ -40,6 +40,14 @@ public class KubernetesMetadata implements CloudMetadata {
   @ApiModelProperty
   public String kubeConfigPullSecret;
 
+  @JsonProperty("KUBECONFIG_NAME")
+  @ApiModelProperty
+  public String kubeConfigName;
+
+  @JsonProperty("KUBECONFIG_CONTENT")
+  @ApiModelProperty
+  public String kubeConfigContent;
+
   @JsonProperty("KUBECONFIG")
   @ApiModelProperty
   public String kubeConfig;

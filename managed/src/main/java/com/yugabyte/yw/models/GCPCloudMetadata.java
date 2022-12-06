@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GCPCloudMetadata implements CloudMetadata {
   private static final String TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST =
-  "Transient property - only present in mutate API request";
+      "Transient property - only present in mutate API request";
 
   @JsonProperty(GCPCloudImpl.GCE_PROJECT_PROPERTY)
   @ApiModelProperty
@@ -64,7 +64,7 @@ public class GCPCloudMetadata implements CloudMetadata {
   @Transient
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String client_id;
-  
+
   @Transient
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String client_x509_cert_url;
@@ -80,7 +80,7 @@ public class GCPCloudMetadata implements CloudMetadata {
   @Transient
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String token_uri;
-  
+
   @Transient
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String type;

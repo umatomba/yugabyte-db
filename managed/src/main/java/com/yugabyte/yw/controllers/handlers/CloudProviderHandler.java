@@ -166,9 +166,9 @@ public class CloudProviderHandler {
           // TODO: make instance types more multi-tenant friendly...
         }
       } else {
-          maybeUpdateCloudProviderConfig(provider, providerConfig, anyProviderRegion);
-        }
+        maybeUpdateCloudProviderConfig(provider, providerConfig, anyProviderRegion);
       }
+    }
     provider.save();
     return provider;
   }
@@ -231,17 +231,8 @@ public class CloudProviderHandler {
           az.updateConfig(ImmutableMap.of("KUBECONFIG", ""));
           az.save();
         }
-        if (zoneConfig != null) {
-          az.updateConfig(zoneConfig);
-          az.save();
-        }
-      }
-      if (regionConfig != null) {
-        region.setConfig(regionConfig);
-        region.save();
       }
     }
-
     try {
       createKubernetesInstanceTypes(customer, provider);
     } catch (PersistenceException ex) {
@@ -313,7 +304,6 @@ public class CloudProviderHandler {
         }
       }
     }
-
     try {
       createKubernetesInstanceTypes(customer, provider);
     } catch (PersistenceException ex) {
@@ -323,8 +313,7 @@ public class CloudProviderHandler {
     return provider;
   }
 
-  public boolean updateKubeConfig(
-      Provider provider, Map<String, String> config, boolean edit) {
+  public boolean updateKubeConfig(Provider provider, Map<String, String> config, boolean edit) {
     return updateKubeConfigForRegion(provider, null, config, edit);
   }
 
@@ -347,7 +336,7 @@ public class CloudProviderHandler {
     }
 
     CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    KubernetesMetadata k8sMetadata = ((KubernetesMetadata)cloudMetadata);
+    KubernetesMetadata k8sMetadata = ((KubernetesMetadata) cloudMetadata);
 
     String path = provider.uuid.toString();
     if (region != null) {
@@ -395,10 +384,9 @@ public class CloudProviderHandler {
     return hasKubeConfig;
   }
 
-  private void updateGCPProviderConfig(
-      Provider provider, Map<String, String> config) {
+  private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
     CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata)cloudMetadata);
+    GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata) cloudMetadata);
     String hostProjectId = config.getOrDefault(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, null);
     gcpMetadata.setGceHostProject(hostProjectId);
     if (!config.isEmpty()) {
@@ -778,13 +766,12 @@ public class CloudProviderHandler {
     toProvider.details.setCloudMetadata(cloudMetadata);
   }
 
-  private void maybeUpdateVPC(
-      Provider provider, Map<String, String> providerConfig) {
+  private void maybeUpdateVPC(Provider provider, Map<String, String> providerConfig) {
     switch (provider.getCloudCode()) {
       case gcp:
         if (providerConfig.getOrDefault("use_host_vpc", "false").equalsIgnoreCase("true")) {
           CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-          GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata)cloudMetadata);
+          GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata) cloudMetadata);
 
           JsonNode currentHostInfo = queryHelper.getCurrentHostInfo(provider.getCloudCode());
           if (!hasHostInfo(currentHostInfo)) {
@@ -847,8 +834,7 @@ public class CloudProviderHandler {
     return true;
   }
 
-  private void validateAndUpdateHostedZone(
-      Provider provider, String hostedZoneId) {
+  private void validateAndUpdateHostedZone(Provider provider, String hostedZoneId) {
     // TODO: do we have a good abstraction to inspect this AND know that it's an error outside?
     ShellResponse response = dnsManager.listDnsRecord(provider.uuid, hostedZoneId);
     if (response.code != 0) {
@@ -856,7 +842,7 @@ public class CloudProviderHandler {
           INTERNAL_SERVER_ERROR, "Invalid devops API response: " + response.message);
     }
     CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    AWSCloudMetadata awsMetadata = ((AWSCloudMetadata)cloudMetadata);
+    AWSCloudMetadata awsMetadata = ((AWSCloudMetadata) cloudMetadata);
     // The result returned from devops should be of the form
     // {
     //    "name": "dev.yugabyte.com."

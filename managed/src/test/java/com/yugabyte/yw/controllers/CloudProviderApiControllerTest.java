@@ -63,7 +63,6 @@ import com.yugabyte.yw.models.Users;
 import com.yugabyte.yw.models.helpers.TaskType;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -92,6 +91,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
   @Mock Config mockConfig;
   @Mock ConfigHelper mockConfigHelper;
   @Mock private play.Configuration appConfig;
+
 
   Customer customer;
   Users user;
@@ -554,7 +554,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     bodyJson.put("name", "aws-Provider");
     ObjectNode detailsJson = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("type", "aws");
+    cloudMetadataJson.put("cloudType", "aws");
     cloudMetadataJson.put("HOSTED_ZONE_ID", "1234");
     detailsJson.set("cloudMetadata", cloudMetadataJson);
     bodyJson.set("details", detailsJson);
@@ -572,7 +572,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     bodyJson.put("name", "aws-Provider");
     ObjectNode detailsJson = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("type", "aws");
+    cloudMetadataJson.put("cloudType", "aws");
     cloudMetadataJson.put("HOSTED_ZONE_ID", "1234");
     detailsJson.set("cloudMetadata", cloudMetadataJson);
     bodyJson.set("details", detailsJson);
@@ -680,7 +680,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
         "{"
             + "\"code\":\"aws\","
             + "\"name\":\"test\","
-            + "\"details\": { \"cloudMetadata\": { \"type\": \"gcp\", \"GCE_HOST_PROJECT\": \"test-project\" } }"
+            + "\"details\": { \"cloudMetadata\": { \"cloudType\": \"gcp\", \"GCE_HOST_PROJECT\": \"test-project\" } }"
         + "}";
     Result result =
         assertPlatformException(() -> patchProvider(Json.parse(jsonString), provider.uuid));
@@ -702,7 +702,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
     ObjectNode details = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("type", "gcp");
+    cloudMetadataJson.put("cloudType", "gcp");
     cloudMetadataJson.put("project_id", "test-project-updated");
     details.set(
         "cloudMetadata", cloudMetadataJson);
@@ -727,13 +727,13 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
     provider.details.setCloudMetadata(cloudMetadata);
     provider.save();
-  
+
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
     Result providerRes = getProvider(provider.uuid);
     ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
     ObjectNode details = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("type", "gcp");
+    cloudMetadataJson.put("cloudType", "gcp");
     cloudMetadataJson.put("GCE_HOST_PROJECT", "test-project-updated");
     details.set(
         "cloudMetadata", cloudMetadataJson);
