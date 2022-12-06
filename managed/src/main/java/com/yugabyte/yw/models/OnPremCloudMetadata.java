@@ -27,9 +27,4 @@ public class OnPremCloudMetadata implements CloudMetadata {
     envVars.put("YB_HOME_DIR", this.ybHomeDir);
     return envVars;
   }
-
-  @JsonIgnore
-  public void updateCloudMetadataDetails(Map<String, String> configData) {
-    // pass
-  }
 }

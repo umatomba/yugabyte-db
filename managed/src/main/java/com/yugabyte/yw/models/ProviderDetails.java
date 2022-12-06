@@ -33,7 +33,7 @@ public class ProviderDetails {
   // Dictates whether or not to show the set up NTP option in the provider UI
   @ApiModelProperty public boolean showSetUpChrony = false;
 
-  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "cloudType")
   @JsonSubTypes({
     @Type(value = AWSCloudMetadata.class, name = "aws"),
     @Type(value = GCPCloudMetadata.class, name = "gcp"),

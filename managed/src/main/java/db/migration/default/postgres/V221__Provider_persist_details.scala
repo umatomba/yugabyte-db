@@ -14,10 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 class V221__Provider_persist_details extends JdbcMigration {
   override def migrate(connection: Connection): Unit = {
 
-    // Add the details column to the provider table.
-    connection.createStatement.executeUpdate("ALTER TABLE provider ADD COLUMN" +
-      " IF NOT EXISTS details json_alias")
-
     var selectStmt = "SELECT uuid, pgp_sym_decrypt(config, 'provider::config') as config, code FROM provider"
     var resultSet = connection.createStatement().executeQuery(selectStmt)
     while(resultSet.next()) {

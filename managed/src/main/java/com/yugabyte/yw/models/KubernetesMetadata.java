@@ -2,11 +2,14 @@ package com.yugabyte.yw.models;
 
 import java.util.Map;
 
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class KubernetesMetadata implements CloudMetadata {
+  private static final String TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST =
+      "Transient property - only present in mutate API request";
 
   @JsonProperty("KUBECONFIG_PROVIDER")
   @ApiModelProperty
@@ -39,26 +44,24 @@ public class KubernetesMetadata implements CloudMetadata {
   @ApiModelProperty
   public String kubeConfig;
 
+  // Used??
   @JsonProperty("KUBECONFIG_STORAGE_CLASSES")
   @ApiModelProperty
   public String kubernetesStorageClass;
 
+  @Transient
   @JsonProperty("KUBECONFIG_PULL_SECRET_CONTENT")
-  @ApiModelProperty
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String kubeConfigPullSecretContent;
 
+  @Transient
   @JsonProperty("KUBECONFIG_PULL_SECRET_NAME")
-  @ApiModelProperty
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String kubeConfigPullSecretName;
 
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     // pass
     return null;
-  }
-
-  @JsonIgnore
-  public void updateCloudMetadataDetails(Map<String, String> configData) {
-    // pass
   }
 }

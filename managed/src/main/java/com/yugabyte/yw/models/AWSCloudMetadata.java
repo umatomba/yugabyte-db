@@ -42,9 +42,4 @@ public class AWSCloudMetadata implements CloudMetadata {
     }
     return envVars;
   }
-
-  @JsonIgnore
-  public void updateCloudMetadataDetails(Map<String, String> configData) {
-    // pass
-  }
 }

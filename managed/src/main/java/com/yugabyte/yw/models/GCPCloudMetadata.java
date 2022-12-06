@@ -10,6 +10,7 @@ import com.yugabyte.yw.cloud.gcp.GCPCloudImpl;
 import com.yugabyte.yw.controllers.handlers.CloudProviderHandler;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.Transient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GCPCloudMetadata implements CloudMetadata {
+  private static final String TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST =
+  "Transient property - only present in mutate API request";
 
   @JsonProperty(GCPCloudImpl.GCE_PROJECT_PROPERTY)
   @ApiModelProperty
@@ -38,31 +41,66 @@ public class GCPCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String ybFirewallTags;
 
-  @JsonProperty("use_host_vpc")
-  @ApiModelProperty
-  public String useHostVPC;
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String use_host_vpc;
 
-  @JsonProperty("project_id")
-  @ApiModelProperty
-  public String projectId;
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String project_id;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String auth_provider_x509_cert_url;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String auth_uri;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String client_email;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String client_id;
+  
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String client_x509_cert_url;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String private_key;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String private_key_id;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String token_uri;
+  
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String type;
+
+  @Transient
+  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  public String use_host_credentials;
 
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    if (this.gceProject != null) {
-      envVars.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, this.gceHostProject);
+    envVars.put(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, this.gceHostProject);
+    if (this.ybFirewallTags != null) {
       envVars.put(CloudProviderHandler.YB_FIREWALL_TAGS, this.ybFirewallTags);
-      envVars.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, this.gceProject);
-      envVars.put(
-          GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, this.googleApplicationCredentials);
     }
+    envVars.put(GCPCloudImpl.GCE_PROJECT_PROPERTY, this.gceProject);
+    envVars.put(
+        GCPCloudImpl.GOOGLE_APPLICATION_CREDENTIALS_PROPERTY, this.googleApplicationCredentials);
 
     return envVars;
-  }
-
-  @JsonIgnore
-  public void updateCloudMetadataDetails(Map<String, String> configMap) {
-    // pass
   }
 }
