@@ -19,21 +19,15 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import io.swagger.annotations.ApiModelProperty.AccessMode;
 
 public class ProviderDetails {
   // these are the fields in access key info that actually belong in provider
   @ApiModelProperty public String sshUser;
   @ApiModelProperty public Integer sshPort = 22;
   @ApiModelProperty public boolean airGapInstall = false;
-  @ApiModelProperty public String provisionInstanceScript = "";
-  @ApiModelProperty public boolean installNodeExporter = true;
-  @ApiModelProperty public Integer nodeExporterPort = 9300;
-  @ApiModelProperty public String nodeExporterUser = "prometheus";
-  @ApiModelProperty public boolean skipProvisioning = false;
-  @ApiModelProperty public boolean deleteRemote = true;
-  @ApiModelProperty public boolean setUpChrony = false;
   @ApiModelProperty public List<String> ntpServers = Collections.emptyList();
-
+  @ApiModelProperty public boolean setUpChrony = false;
   // Indicates whether the provider was created before or after PLAT-3009
   // True if it was created after, else it was created before.
   // Dictates whether or not to show the set up NTP option in the provider UI
@@ -59,4 +53,22 @@ public class ProviderDetails {
     providerDetails.setCloudMetadata(cloudMetadata);
     return providerDetails;
   }
+  /// These need database migration before we make these read write
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public boolean passwordlessSudoAccess = true;
+
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public String provisionInstanceScript = "";
+
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public boolean installNodeExporter = true;
+
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public Integer nodeExporterPort = 9300;
+
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public String nodeExporterUser = "prometheus";
+
+  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
+  public boolean skipProvisioning = false;
 }

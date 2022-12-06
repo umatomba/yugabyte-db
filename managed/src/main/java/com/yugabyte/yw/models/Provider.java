@@ -23,7 +23,6 @@ import io.ebean.Model;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Encrypted;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class Provider extends Model {
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
   @Encrypted
-  public ProviderDetails details;
+  public ProviderDetails details = new ProviderDetails();
 
   @OneToMany(cascade = CascadeType.ALL)
   @JsonManagedReference(value = "provider-regions")
@@ -131,9 +130,17 @@ public class Provider extends Model {
 
   // Custom SSH user to login to machines.
   // Default: created and managed by YB.
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public String sshUser = null;
+  @Deprecated
+  @ApiModelProperty(hidden = true)
+  public void setSshUser(String sshUser) {
+    this.details.sshUser = sshUser;
+  }
+
+  @Deprecated
+  @ApiModelProperty(hidden = true)
+  public void setSshPort(Integer sshPort) {
+    this.details.sshPort = sshPort;
+  }
 
   /**
    * Whether provider should use airgapped install. Default: false.
@@ -141,14 +148,38 @@ public class Provider extends Model {
    * @deprecated - Use details.airGapInstall
    */
   @Deprecated
+  @ApiModelProperty(hidden = true)
   public void setAirGapInstall(boolean v) {
     details.airGapInstall = v;
   }
 
-  // Port to open for connections on the instance.
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public Integer sshPort = 22;
+  @Deprecated
+  @ApiModelProperty(hidden = true)
+  public void setNtpServers(List<String> ntpServers) {
+    this.details.ntpServers = ntpServers;
+  }
+
+  /**
+   * Whether or not to set up NTP
+   *
+   * @deprecated use details.setUpChrony
+   */
+  @Deprecated
+  @ApiModelProperty(hidden = true)
+  public void setSetUpChrony(boolean v) {
+    details.setUpChrony = v;
+  }
+
+  /**
+   * Indicates whether the provider was created before or after PLAT-3009 True if it was created
+   * after, else it was created before. Dictates whether or not to show the set up NTP option in the
+   * provider UI
+   */
+  @Deprecated
+  @ApiModelProperty(hidden = true)
+  public void setShowSetUpChrony(boolean showSetUpChrony) {
+    this.details.showSetUpChrony = showSetUpChrony;
+  }
 
   @ApiModelProperty public String hostVpcId = null;
 
@@ -156,30 +187,10 @@ public class Provider extends Model {
 
   @ApiModelProperty public String destVpcId = null;
 
+  @Deprecated // should be a runtime config at customer level
   @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty(value = TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST, hidden = true)
   public boolean overrideKeyValidate = false;
-
-  /**
-   * Whether or not to set up NTP
-   *
-   * @deprecated use details.setUpChrony
-   */
-  public boolean setSetUpChrony(boolean v) {
-    return details.setUpChrony = v;
-  }
-
-  // NTP servers to connect to
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public List<String> ntpServers = new ArrayList<>();
-
-  // Indicates whether the provider was created before or after PLAT-3009
-  // True if it was created after, else it was created before.
-  // Dictates whether or not to show the set up NTP option in the provider UI
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
-  public boolean showSetUpChrony = true;
 
   // Hosted Zone for the deployment
   @Transient
@@ -279,7 +290,6 @@ public class Provider extends Model {
     provider.code = code.toString();
     provider.name = name;
     provider.setConfig(config);
-    provider.details = new ProviderDetails();
     provider.save();
     return provider;
   }
