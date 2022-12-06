@@ -11,7 +11,7 @@ import play.api.libs.json._
 import com.yugabyte.yw.models.ProviderDetails
 import com.fasterxml.jackson.databind.ObjectMapper
 
-class V219__Provider_persist_details extends JdbcMigration {
+class V221__Provider_persist_details extends JdbcMigration {
   override def migrate(connection: Connection): Unit = {
 
     // Add the details column to the provider table.
