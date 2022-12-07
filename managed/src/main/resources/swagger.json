@@ -5882,6 +5882,9 @@
         "airGapInstall" : {
           "type" : "boolean"
         },
+        "cloudMetadata" : {
+          "$ref" : "#/definitions/CloudMetadata"
+        },
         "installNodeExporter" : {
           "readOnly" : true,
           "type" : "boolean"
@@ -5927,6 +5930,7 @@
           "type" : "string"
         }
       },
+      "required" : [ "cloudMetadata" ],
       "type" : "object"
     },
     "QueryDistributionSuggestionResponse" : {
@@ -17605,7 +17609,7 @@
     "/api/v1/customers/{cUUID}/universes/{uniUUID}/ybc_throttle_params" : {
       "get" : {
         "description" : "",
-        "operationId" : "getThrottleparams",
+        "operationId" : "getThrottleParams",
         "parameters" : [ {
           "format" : "uuid",
           "in" : "path",
