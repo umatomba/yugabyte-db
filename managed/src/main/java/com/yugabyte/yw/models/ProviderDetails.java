@@ -47,12 +47,6 @@ public class ProviderDetails {
     this.cloudMetadata = metadata;
   }
 
-  public static ProviderDetails getProviderDetails(Map<String, String> config, String code) {
-    ProviderDetails providerDetails = new ProviderDetails();
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(code, config);
-    providerDetails.setCloudMetadata(cloudMetadata);
-    return providerDetails;
-  }
   /// These need database migration before we make these read write
   @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
   public boolean passwordlessSudoAccess = true;
