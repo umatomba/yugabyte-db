@@ -10,7 +10,6 @@ import com.yugabyte.yw.cloud.gcp.GCPCloudImpl;
 import com.yugabyte.yw.controllers.handlers.CloudProviderHandler;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.Transient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GCPCloudMetadata implements CloudMetadata {
-  private static final String TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST =
-      "Transient property - only present in mutate API request";
 
   @JsonProperty(GCPCloudImpl.GCE_PROJECT_PROPERTY)
   @ApiModelProperty
@@ -41,52 +38,40 @@ public class GCPCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String ybFirewallTags;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String use_host_vpc;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String project_id;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String auth_provider_x509_cert_url;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String auth_uri;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String client_email;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String client_id;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String client_x509_cert_url;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String private_key;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String private_key_id;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String token_uri;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String type;
 
-  @Transient
-  @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
+  @ApiModelProperty
   public String use_host_credentials;
 
   @JsonIgnore

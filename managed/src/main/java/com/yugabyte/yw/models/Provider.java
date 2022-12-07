@@ -289,7 +289,12 @@ public class Provider extends Model {
     provider.uuid = providerUUID;
     provider.code = code.toString();
     provider.name = name;
-    provider.setConfig(config);
+    // Deprecated
+    // provider.setConfig(config);
+    provider.details = new ProviderDetails();
+    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(code.toString(), config);
+    provider.details.setCloudMetadata(cloudMetadata);
+
     provider.save();
     return provider;
   }

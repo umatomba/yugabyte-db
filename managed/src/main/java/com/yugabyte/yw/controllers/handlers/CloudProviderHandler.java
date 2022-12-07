@@ -151,11 +151,10 @@ public class CloudProviderHandler {
       throw new PlatformServiceException(
           BAD_REQUEST, String.format("Provider with the name %s already exists", providerName));
     }
-    Provider provider = Provider.create(customer.uuid, providerCode, providerName);
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, providerConfig);
-    provider.details.setCloudMetadata(cloudMetadata);
+    Provider provider = Provider.create(customer.uuid, providerCode, providerName, providerConfig);
 
     maybeUpdateVPC(provider, providerConfig);
+    providerConfig = provider.getUnmaskedConfig();
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
       if (provider.getCloudCode().equals(kubernetes)) {
@@ -212,9 +211,7 @@ public class CloudProviderHandler {
     }
 
     Map<String, String> config = formData.config;
-    Provider provider = Provider.create(customer.uuid, providerCode, formData.name);
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, config);
-    provider.details.setCloudMetadata(cloudMetadata);
+    Provider provider = Provider.create(customer.uuid, providerCode, formData.name, config);
 
     boolean isConfigInProvider = updateKubeConfig(provider, config, false);
     List<KubernetesProviderFormData.RegionData> regionList = formData.regionList;
@@ -281,11 +278,8 @@ public class CloudProviderHandler {
       }
     }
 
-    Provider provider;
     Map<String, String> config = reqProvider.getUnmaskedConfig();
-    provider = Provider.create(customer.uuid, providerCode, reqProvider.name);
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(provider.code, config);
-    provider.details.setCloudMetadata(cloudMetadata);
+    Provider provider = Provider.create(customer.uuid, providerCode, reqProvider.name, config);
 
     boolean isConfigInProvider = updateKubeConfig(provider, config, false);
     List<Region> regionList = reqProvider.regions;
@@ -361,6 +355,9 @@ public class CloudProviderHandler {
       }
     }
 
+    if (config.containsKey("KUBECONFIG_STORAGE_CLASSES")) {
+      k8sMetadata.setKubernetesStorageClass(config.get("KUBECONFIG_STORAGE_CLASSES"));
+    }
     if (region == null) {
       if (config.containsKey("KUBECONFIG_PULL_SECRET_NAME")) {
         if (config.get("KUBECONFIG_PULL_SECRET_NAME") != null) {
@@ -684,8 +681,11 @@ public class CloudProviderHandler {
     boolean updatedProviderConfig =
         maybeUpdateCloudProviderConfig(provider, unmaskedConfig, anyProviderRegion);
     boolean updatedKubeConfig = maybeUpdateKubeConfig(provider, unmaskedConfig);
-    provider.save();
-    return updatedHostedZone || updatedProviderConfig || updatedKubeConfig;
+    boolean providerDataUpdated = updatedHostedZone || updatedProviderConfig || updatedKubeConfig;
+    if (providerDataUpdated) {
+      provider.save();
+    }
+    return providerDataUpdated;
   }
 
   private UUID maybeAddRegions(
