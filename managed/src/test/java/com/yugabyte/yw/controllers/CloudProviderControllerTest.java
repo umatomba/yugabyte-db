@@ -690,7 +690,7 @@ public class CloudProviderControllerTest extends FakeDBApplication {
     ObjectNode detailsJson = (ObjectNode) bodyJson.get("details");
     ObjectNode cloudMetadataJson = (ObjectNode) detailsJson.get("cloudMetadata");
     cloudMetadataJson.put("KUBECONFIG_STORAGE_CLASSES", "slow");
-  
+
     Result result = editProvider(bodyJson, p.uuid);
     assertOk(result);
     JsonNode json = Json.parse(contentAsString(result));
@@ -715,7 +715,7 @@ public class CloudProviderControllerTest extends FakeDBApplication {
     ObjectNode cloudMetadataJson = (ObjectNode) detailsJson.get("cloudMetadata");
     cloudMetadataJson.put("KUBECONFIG_NAME", "test2.conf");
     cloudMetadataJson.put("KUBECONFIG_CONTENT", "test5678");
-  
+
     bodyJson.put("name", "kubernetes");
     bodyJson.put("code", "kubernetes");
 

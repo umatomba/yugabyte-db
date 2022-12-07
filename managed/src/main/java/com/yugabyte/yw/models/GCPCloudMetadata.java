@@ -38,41 +38,29 @@ public class GCPCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String ybFirewallTags;
 
-  @ApiModelProperty
-  public String use_host_vpc;
+  @ApiModelProperty public String use_host_vpc;
 
-  @ApiModelProperty
-  public String project_id;
+  @ApiModelProperty public String project_id;
 
-  @ApiModelProperty
-  public String auth_provider_x509_cert_url;
+  @ApiModelProperty public String auth_provider_x509_cert_url;
 
-  @ApiModelProperty
-  public String auth_uri;
+  @ApiModelProperty public String auth_uri;
 
-  @ApiModelProperty
-  public String client_email;
+  @ApiModelProperty public String client_email;
 
-  @ApiModelProperty
-  public String client_id;
+  @ApiModelProperty public String client_id;
 
-  @ApiModelProperty
-  public String client_x509_cert_url;
+  @ApiModelProperty public String client_x509_cert_url;
 
-  @ApiModelProperty
-  public String private_key;
+  @ApiModelProperty public String private_key;
 
-  @ApiModelProperty
-  public String private_key_id;
+  @ApiModelProperty public String private_key_id;
 
-  @ApiModelProperty
-  public String token_uri;
+  @ApiModelProperty public String token_uri;
 
-  @ApiModelProperty
-  public String type;
+  @ApiModelProperty public String type;
 
-  @ApiModelProperty
-  public String use_host_credentials;
+  @ApiModelProperty public String use_host_credentials;
 
   @JsonIgnore
   public Map<String, String> getEnvVars() {

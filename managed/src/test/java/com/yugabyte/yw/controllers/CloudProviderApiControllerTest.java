@@ -92,7 +92,6 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
   @Mock ConfigHelper mockConfigHelper;
   @Mock private play.Configuration appConfig;
 
-
   Customer customer;
   Users user;
 
@@ -681,8 +680,9 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
         "{"
             + "\"code\":\"aws\","
             + "\"name\":\"test\","
-            + "\"details\": { \"cloudMetadata\": { \"cloudType\": \"gcp\", \"GCE_HOST_PROJECT\": \"test-project\" } }"
-        + "}";
+            + "\"details\": { \"cloudMetadata\": { \"cloudType\": \"gcp\","
+            + "\"GCE_HOST_PROJECT\": \"test-project\" } }"
+            + "}";
     Result result =
         assertPlatformException(() -> patchProvider(Json.parse(jsonString), provider.uuid));
     assertBadRequest(result, "Unknown keys found: [GCE_HOST_PROJECT]");
@@ -706,8 +706,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     ObjectNode cloudMetadataJson = Json.newObject();
     cloudMetadataJson.put("cloudType", "gcp");
     cloudMetadataJson.put("project_id", "test-project-updated");
-    details.set(
-        "cloudMetadata", cloudMetadataJson);
+    details.set("cloudMetadata", cloudMetadataJson);
     providerJson.set("details", details);
     Result result = patchProvider(providerJson, provider.uuid);
     assertOk(result);
@@ -737,8 +736,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     ObjectNode cloudMetadataJson = Json.newObject();
     cloudMetadataJson.put("cloudType", "gcp");
     cloudMetadataJson.put("GCE_HOST_PROJECT", "test-project-updated");
-    details.set(
-        "cloudMetadata", cloudMetadataJson);
+    details.set("cloudMetadata", cloudMetadataJson);
     providerJson.set("details", details);
 
     Result result = patchProviderWithEH(providerJson, provider.uuid);
