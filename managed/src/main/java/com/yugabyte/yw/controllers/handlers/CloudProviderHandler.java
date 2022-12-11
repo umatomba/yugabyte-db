@@ -392,7 +392,8 @@ public class CloudProviderHandler {
     // ToDo: Fix the edit provider part.
     GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
     String gcpCredentialsFile =
-        accessManager.createGCPCredentialsFile(provider.uuid, gcpMetadata.getGceApplicationCredentials());
+        accessManager.createGCPCredentialsFile(
+            provider.uuid, gcpMetadata.getGceApplicationCredentials());
     if (gcpCredentialsFile != null) {
       gcpMetadata.setGceApplicationCredentialsPath(gcpCredentialsFile);
     }

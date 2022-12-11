@@ -298,7 +298,7 @@ public class Provider extends Model {
     return provider;
   }
 
-   /**
+  /**
    * Create a new Cloud Provider
    *
    * @param customerUUID, customer uuid
@@ -313,12 +313,11 @@ public class Provider extends Model {
   }
 
   public static Provider create(
-    UUID customerUUID,
-    UUID providerUUID,
-    Common.CloudType code,
-    String name,
-    ProviderDetails providerDetails
-  ) {
+      UUID customerUUID,
+      UUID providerUUID,
+      Common.CloudType code,
+      String name,
+      ProviderDetails providerDetails) {
     Provider provider = new Provider();
     provider.customerUUID = customerUUID;
     provider.uuid = providerUUID;

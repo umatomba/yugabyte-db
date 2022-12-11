@@ -4,11 +4,12 @@ package db.migration.default_.postgres;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.ProviderDetails;
 
 import org.flywaydb.core.api.migration.jdbc.BaseJdbcMigration;
@@ -24,15 +25,15 @@ public class V221__Provider_persist_details extends BaseJdbcMigration {
 
     while (providers.next()) {
       String providerUUID = providers.getString("uuid");
-      String providerCode = providers.getString("code");
-      Map<String, String> config =
-          (HashMap<String, String>) mapper.readValue(providers.getString("config"), HashMap.class);
+      String customerUUID = providers.getString("customer_uuid");
+      Map<String, String> config = mapper.readValue(providers.getString("config"), Map.class);
 
-      ProviderDetails details = new ProviderDetails();
-      // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(providerCode, config);
-      // details.setCloudMetadata(cloudMetadata);
+      Provider provider =
+          Provider.getOrBadRequest(UUID.fromString(customerUUID), UUID.fromString(providerUUID));
+      provider.details = new ProviderDetails();
 
-      String detailsSerialized = mapper.writeValueAsString(details);
+      CloudMetadata.setCloudProviderMetadataFromConfig(provider, config);
+      String detailsSerialized = mapper.writeValueAsString(provider.details);
       String updateStmt =
           String.format(
               "UPDATE provider SET details = '%s' WHERE uuid = '%s'",

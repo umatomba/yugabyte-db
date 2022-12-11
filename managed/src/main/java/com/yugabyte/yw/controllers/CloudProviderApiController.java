@@ -180,7 +180,7 @@ public class CloudProviderApiController extends AuthenticatedController {
     if (providerCode.equals(CloudType.kubernetes)) {
       providerEbean = cloudProviderHandler.createKubernetesNew(customer, reqProvider);
     } else {
-        providerEbean =
+      providerEbean =
           cloudProviderHandler.createProvider(
               customer,
               providerCode,

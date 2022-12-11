@@ -73,7 +73,8 @@ public class GCPCloudImpl implements CloudAPI {
       ObjectMapper mapper = new ObjectMapper();
       JsonNode gcpCredentials = gcpCloudMetadata.getGceApplicationCredentials();
       GoogleCredentials credentials =
-          GoogleCredentials.fromStream(new ByteArrayInputStream(mapper.writeValueAsBytes(gcpCredentials)));
+          GoogleCredentials.fromStream(
+              new ByteArrayInputStream(mapper.writeValueAsBytes(gcpCredentials)));
       HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
       HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
       // Create Compute Engine object for listing instances.

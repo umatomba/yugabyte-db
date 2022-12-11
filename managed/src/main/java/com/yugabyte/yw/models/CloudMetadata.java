@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yugabyte.yw.commissioner.Common.CloudType;
 import com.yugabyte.yw.common.PlatformServiceException;
 
-
 public interface CloudMetadata {
 
   public final ObjectMapper mapper = new ObjectMapper();
@@ -42,7 +41,8 @@ public interface CloudMetadata {
     }
   }
 
-  public static void setCloudProviderMetadataFromConfig(Provider provider, Map<String, String> config) {
+  public static void setCloudProviderMetadataFromConfig(
+      Provider provider, Map<String, String> config) {
     CloudType cloudType = CloudType.valueOf(provider.code);
     switch (cloudType) {
       case aws:
@@ -54,8 +54,7 @@ public interface CloudMetadata {
         provider.details.setGcpCloudMetadata(gcpCloudMetadata);
         break;
       case azu:
-        AzureCloudMetadata azuCloudMetadata =
-            mapper.convertValue(config, AzureCloudMetadata.class);
+        AzureCloudMetadata azuCloudMetadata = mapper.convertValue(config, AzureCloudMetadata.class);
         provider.details.setAzureCloudMetadata(azuCloudMetadata);
         break;
       case kubernetes:
