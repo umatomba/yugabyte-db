@@ -2,6 +2,7 @@
 
 package com.yugabyte.yw.cloud.gcp;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -12,7 +13,8 @@ import com.google.api.services.compute.Compute;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.yugabyte.yw.cloud.CloudAPI;
-import com.yugabyte.yw.common.utils.Pair;
+import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.GCPCloudMetadata;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.helpers.NodeID;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GCPCloudImpl implements CloudAPI {
 
-  public static final String PROJECT_ID_PROPERTY = "project_id";
+  public static final String PROJECT_ID_PROPERTY = "gce_project";
   public static final String CUSTOM_GCE_NETWORK_PROPERTY = "CUSTOM_GCE_NETWORK";
   public static final String GCE_PROJECT_PROPERTY = "GCE_PROJECT";
   public static final String GOOGLE_APPLICATION_CREDENTIALS_PROPERTY =
@@ -59,8 +61,9 @@ public class GCPCloudImpl implements CloudAPI {
 
   // Basic validation to make sure that the credentials work with GCP.
   @Override
-  public boolean isValidCreds(Map<String, String> config, String region) {
-    String projectId = config.get(PROJECT_ID_PROPERTY);
+  public boolean isValidCreds(Provider provider, String region) {
+    GCPCloudMetadata gcpCloudMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+    String projectId = gcpCloudMetadata.getGceProject();
     if (StringUtils.isBlank(projectId)) {
       log.error("Project ID is not set, skipping validation");
       // TODO validate for service account.
@@ -68,8 +71,9 @@ public class GCPCloudImpl implements CloudAPI {
     }
     try {
       ObjectMapper mapper = new ObjectMapper();
+      JsonNode gcpCredentials = gcpCloudMetadata.getGceApplicationCredentials();
       GoogleCredentials credentials =
-          GoogleCredentials.fromStream(new ByteArrayInputStream(mapper.writeValueAsBytes(config)));
+          GoogleCredentials.fromStream(new ByteArrayInputStream(mapper.writeValueAsBytes(gcpCredentials)));
       HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
       HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
       // Create Compute Engine object for listing instances.

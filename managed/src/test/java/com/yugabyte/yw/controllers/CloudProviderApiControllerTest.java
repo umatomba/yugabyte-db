@@ -673,25 +673,25 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
 
   @Test
   public void testPatchProviderFailure() throws Exception {
-    when(mockAccessManager.createCredentialsFile(any(), any())).thenReturn("/test-path");
+    when(mockAccessManager.createGCPCredentialsFile(any(), any())).thenReturn("/test-path");
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
     String jsonString =
         "{"
             + "\"code\":\"aws\","
             + "\"name\":\"test\","
-            + "\"details\": { \"cloudMetadata\": { \"cloudType\": \"gcp\","
-            + "\"GCE_HOST_PROJECT\": \"test-project\" } }"
+            + "\"details\": { \"gcpCloudMetadata\": {"
+            + "\"project_id\": \"test-project\" } }"
             + "}";
     Result result =
         assertPlatformException(() -> patchProvider(Json.parse(jsonString), provider.uuid));
-    assertBadRequest(result, "Unknown keys found: [GCE_HOST_PROJECT]");
+    assertBadRequest(result, "Unknown keys found: [project_id]");
   }
 
   // to be fixed.
   // @Test
   public void testPatchProviderSuccess() throws Exception {
-    when(mockAccessManager.createCredentialsFile(any(), any())).thenReturn("/test-path");
+    when(mockAccessManager.createGCPCredentialsFile(any(), any())).thenReturn("/test-path");
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("project_id", "test-project");
@@ -721,7 +721,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
 
   @Test
   public void testPatchProviderConcurrentModification() throws Exception {
-    when(mockAccessManager.createCredentialsFile(any(), any())).thenReturn("/test-path");
+    when(mockAccessManager.createGCPCredentialsFile(any(), any())).thenReturn("/test-path");
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("GCE_HOST_PROJECT", "test-project");

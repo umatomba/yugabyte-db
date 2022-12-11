@@ -713,7 +713,7 @@ public class AccessManagerTest extends FakeDBApplication {
       ObjectNode credentials = Json.newObject();
       credentials.put("foo", "bar");
       credentials.put("hello", "world");
-      String configFile = accessManager.createCredentialsFile(defaultProvider.uuid, credentials);
+      String configFile = accessManager.createGCPCredentialsFile(defaultProvider.uuid, credentials);
       assertEquals(
           "/tmp/yugaware_tests/amt/keys/" + defaultProvider.uuid + "/credentials.json", configFile);
       List<String> lines = Files.readAllLines(Paths.get(configFile));
@@ -730,7 +730,7 @@ public class AccessManagerTest extends FakeDBApplication {
     Map<String, String> inputConfig = new HashMap<>();
     inputConfig.put("foo", "bar");
     inputConfig.put("hello", "world");
-    accessManager.createCredentialsFile(defaultProvider.uuid, Json.toJson(inputConfig));
+    accessManager.createGCPCredentialsFile(defaultProvider.uuid, Json.toJson(inputConfig));
     Map<String, String> configMap = accessManager.readCredentialsFromFile(defaultProvider.uuid);
     assertEquals(inputConfig, configMap);
   }

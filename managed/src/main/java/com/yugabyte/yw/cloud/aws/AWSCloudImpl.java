@@ -157,7 +157,9 @@ public class AWSCloudImpl implements CloudAPI {
   }
 
   @Override
-  public boolean isValidCreds(Map<String, String> config, String region) {
+  public boolean isValidCreds(Provider provider, String region) {
+    // ToDo
+    Map<String, String> config = provider.getUnmaskedConfig();
     try {
       AmazonEC2 ec2Client = getEC2ClientInternal(config, region);
       DryRunResult<DescribeInstancesRequest> dryRunResult =

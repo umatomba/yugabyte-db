@@ -39,10 +39,6 @@ public class AzureCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String azuRG;
 
-  @JsonProperty("HOSTED_ZONE_ID")
-  @ApiModelProperty
-  public String azuHostedZoneID;
-
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
