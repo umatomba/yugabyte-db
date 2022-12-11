@@ -8,8 +8,10 @@ import static io.swagger.annotations.ApiModelProperty.AccessMode.READ_WRITE;
 import static play.mvc.Http.Status.BAD_REQUEST;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.yugabyte.yw.commissioner.Common;
@@ -41,6 +43,7 @@ import javax.persistence.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.validation.Constraints;
+import play.libs.Json;
 
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"customer_uuid", "name", "code"}))
 @Entity
@@ -87,12 +90,12 @@ public class Provider extends Model {
     this.customerUUID = id;
   }
 
-  /** @deprecated - Use details.cloudMetadata */
-  // @Deprecated
+  /** @deprecated - Use details.metadata instead */
+  @Deprecated
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
   @Encrypted
-  private Map<String, String> config;
+  public Map<String, String> config;
 
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
@@ -212,12 +215,15 @@ public class Provider extends Model {
     this.version = version;
   }
 
+  @Deprecated
   @JsonProperty("config")
+  @JsonIgnore
   public void setConfig(Map<String, String> configMap) {
-    this.config = configMap;
+    CloudMetadata.setCloudProviderMetadataFromConfig(this, configMap);
   }
 
   @JsonProperty("config")
+  @JsonIgnore
   public Map<String, String> getMaskedConfig() {
     return maskConfigNew(this.getUnmaskedConfig());
   }
@@ -225,11 +231,8 @@ public class Provider extends Model {
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     // Return unmasked provider details.
-    if (this.details == null) {
-      return new HashMap<>();
-    }
     ObjectMapper mapper = new ObjectMapper();
-    CloudMetadata cloudConfigMetadata = (CloudMetadata) this.details.cloudMetadata;
+    CloudMetadata cloudConfigMetadata = CloudMetadata.getCloudProviderMetadata(this);
     if (cloudConfigMetadata != null) {
       Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
       if (cloudConfig != null) {
@@ -289,12 +292,39 @@ public class Provider extends Model {
     provider.uuid = providerUUID;
     provider.code = code.toString();
     provider.name = name;
-    // Deprecated
-    // provider.setConfig(config);
     provider.details = new ProviderDetails();
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(code.toString(), config);
-    provider.details.setCloudMetadata(cloudMetadata);
+    provider.setConfig(config);
+    provider.save();
+    return provider;
+  }
 
+   /**
+   * Create a new Cloud Provider
+   *
+   * @param customerUUID, customer uuid
+   * @param code, code of cloud provider
+   * @param name, name of cloud provider
+   * @param providerDetails, providerDetails configuration.
+   * @return instance of cloud provider
+   */
+  public static Provider create(
+      UUID customerUUID, Common.CloudType code, String name, ProviderDetails providerDetails) {
+    return create(customerUUID, null, code, name, providerDetails);
+  }
+
+  public static Provider create(
+    UUID customerUUID,
+    UUID providerUUID,
+    Common.CloudType code,
+    String name,
+    ProviderDetails providerDetails
+  ) {
+    Provider provider = new Provider();
+    provider.customerUUID = customerUUID;
+    provider.uuid = providerUUID;
+    provider.code = code.toString();
+    provider.name = name;
+    provider.details = providerDetails;
     provider.save();
     return provider;
   }

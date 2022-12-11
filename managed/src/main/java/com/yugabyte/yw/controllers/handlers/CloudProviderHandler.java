@@ -144,17 +144,26 @@ public class CloudProviderHandler {
       Customer customer,
       Common.CloudType providerCode,
       String providerName,
-      Map<String, String> providerConfig,
+      Provider reqProvider,
       String anyProviderRegion) {
     Provider existentProvider = Provider.get(customer.uuid, providerName, providerCode);
     if (existentProvider != null) {
       throw new PlatformServiceException(
           BAD_REQUEST, String.format("Provider with the name %s already exists", providerName));
     }
-    Provider provider = Provider.create(customer.uuid, providerCode, providerName, providerConfig);
 
-    maybeUpdateVPC(provider, providerConfig);
-    providerConfig = provider.getUnmaskedConfig();
+    Provider provider;
+    // Support Backward Compatiblity.
+    if (reqProvider.config != null) {
+      Map<String, String> providerConfig = reqProvider.getUnmaskedConfig();
+      provider = Provider.create(customer.uuid, providerCode, providerName, providerConfig);
+    } else {
+      provider = Provider.create(customer.uuid, providerCode, providerName, reqProvider.details);
+    }
+
+    maybeUpdateVPC(provider);
+    // ToDo: to be fixed.
+    Map<String, String> providerConfig = provider.getUnmaskedConfig();
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
       if (provider.getCloudCode().equals(kubernetes)) {
@@ -329,8 +338,9 @@ public class CloudProviderHandler {
       return false;
     }
 
-    CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    KubernetesMetadata k8sMetadata = ((KubernetesMetadata) cloudMetadata);
+    // CloudMetadata cloudMetadata = provider.details.cloudMetadata;
+    // KubernetesMetadata k8sMetadata = ((KubernetesMetadata) cloudMetadata);
+    KubernetesMetadata k8sMetadata = null;
 
     String path = provider.uuid.toString();
     if (region != null) {
@@ -382,19 +392,16 @@ public class CloudProviderHandler {
   }
 
   private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
-    CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata) cloudMetadata);
-    String hostProjectId = config.getOrDefault(GCPCloudImpl.GCE_HOST_PROJECT_PROPERTY, null);
-    gcpMetadata.setGceHostProject(hostProjectId);
+    GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+
+    // Read the project from reqConfig if exists
+    String hostProjectId = config.getOrDefault("project_id", null);
+    gcpMetadata.setGceProject(hostProjectId);
     if (!config.isEmpty()) {
       String gcpCredentialsFile =
           accessManager.createCredentialsFile(provider.uuid, Json.toJson(config));
-      String projectId = config.getOrDefault(GCPCloudImpl.PROJECT_ID_PROPERTY, null);
-      if (projectId != null) {
-        gcpMetadata.setGceProject(projectId);
-      }
       if (gcpCredentialsFile != null) {
-        gcpMetadata.setGoogleApplicationCredentials(gcpCredentialsFile);
+        gcpMetadata.setGceApplicationCredentialsPath(gcpCredentialsFile);
       }
       if (config.containsKey(YB_FIREWALL_TAGS)) {
         gcpMetadata.setYbFirewallTags(config.get(YB_FIREWALL_TAGS));
@@ -762,16 +769,15 @@ public class CloudProviderHandler {
     }
     existingConfig = new HashMap<>(existingConfig);
     existingConfig.putAll(providerConfig);
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(toProvider.code, existingConfig);
-    toProvider.details.setCloudMetadata(cloudMetadata);
+    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(toProvider.code, existingConfig);
+    // toProvider.details.setCloudMetadata(cloudMetadata);
   }
 
-  private void maybeUpdateVPC(Provider provider, Map<String, String> providerConfig) {
+  private void maybeUpdateVPC(Provider provider) {
     switch (provider.getCloudCode()) {
       case gcp:
-        if (providerConfig.getOrDefault("use_host_vpc", "false").equalsIgnoreCase("true")) {
-          CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-          GCPCloudMetadata gcpMetadata = ((GCPCloudMetadata) cloudMetadata);
+        GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+        if (gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
 
           JsonNode currentHostInfo = queryHelper.getCurrentHostInfo(provider.getCloudCode());
           if (!hasHostInfo(currentHostInfo)) {
@@ -787,7 +793,7 @@ public class CloudProviderHandler {
           // As such, since all the
           // config is loaded up as env vars anyway, might as well use in in devops like that...
           gcpMetadata.setCustomGceNetwork(network);
-          gcpMetadata.setGceHostProject(currentHostInfo.get("host_project").asText());
+          gcpMetadata.setGceProject(currentHostInfo.get("host_project").asText());
         }
         break;
       case aws:
@@ -841,8 +847,10 @@ public class CloudProviderHandler {
       throw new PlatformServiceException(
           INTERNAL_SERVER_ERROR, "Invalid devops API response: " + response.message);
     }
-    CloudMetadata cloudMetadata = provider.details.cloudMetadata;
-    AWSCloudMetadata awsMetadata = ((AWSCloudMetadata) cloudMetadata);
+    // CloudMetadata cloudMetadata = provider.details.cloudMetadata;
+    // AWSCloudMetadata awsMetadata = ((AWSCloudMetadata) cloudMetadata);
+    AWSCloudMetadata awsMetadata = null;
+
     // The result returned from devops should be of the form
     // {
     //    "name": "dev.yugabyte.com."

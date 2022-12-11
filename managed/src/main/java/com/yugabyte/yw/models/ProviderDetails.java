@@ -13,14 +13,14 @@ package com.yugabyte.yw.models;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.annotations.ApiModelProperty.AccessMode;
+import lombok.Data;
 
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProviderDetails {
   // these are the fields in access key info that actually belong in provider
   @ApiModelProperty public String sshUser;
@@ -33,19 +33,11 @@ public class ProviderDetails {
   // Dictates whether or not to show the set up NTP option in the provider UI
   @ApiModelProperty public boolean showSetUpChrony = false;
 
-  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "cloudType")
-  @JsonSubTypes({
-    @Type(value = AWSCloudMetadata.class, name = "aws"),
-    @Type(value = GCPCloudMetadata.class, name = "gcp"),
-    @Type(value = AzureCloudMetadata.class, name = "azu"),
-    @Type(value = KubernetesMetadata.class, name = "kubernetes"),
-    @Type(value = OnPremCloudMetadata.class, name = "onprem")
-  })
-  public CloudMetadata cloudMetadata;
-
-  public void setCloudMetadata(CloudMetadata metadata) {
-    this.cloudMetadata = metadata;
-  }
+  @ApiModelProperty public AWSCloudMetadata awsCloudMetadata;
+  @ApiModelProperty public AzureCloudMetadata azureCloudMetadata;
+  @ApiModelProperty public GCPCloudMetadata gcpCloudMetadata;
+  @ApiModelProperty public KubernetesMetadata kubernetesCloudMetadata;
+  @ApiModelProperty public OnPremCloudMetadata onPremCloudMetadata;
 
   /// These need database migration before we make these read write
   @ApiModelProperty(accessMode = AccessMode.READ_ONLY)

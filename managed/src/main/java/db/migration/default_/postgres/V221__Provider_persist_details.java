@@ -29,8 +29,8 @@ public class V221__Provider_persist_details extends BaseJdbcMigration {
           (HashMap<String, String>) mapper.readValue(providers.getString("config"), HashMap.class);
 
       ProviderDetails details = new ProviderDetails();
-      CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(providerCode, config);
-      details.setCloudMetadata(cloudMetadata);
+      // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider(providerCode, config);
+      // details.setCloudMetadata(cloudMetadata);
 
       String detailsSerialized = mapper.writeValueAsString(details);
       String updateStmt =

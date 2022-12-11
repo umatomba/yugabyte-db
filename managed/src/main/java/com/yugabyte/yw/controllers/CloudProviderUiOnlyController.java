@@ -14,6 +14,7 @@ import com.yugabyte.yw.forms.PlatformResults;
 import com.yugabyte.yw.forms.PlatformResults.YBPSuccess;
 import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.models.Audit;
+import com.yugabyte.yw.models.CloudMetadata;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.helpers.JsonFieldsValidator;
@@ -52,12 +53,16 @@ public class CloudProviderUiOnlyController extends AuthenticatedController {
     fieldsValidator.validateFields(
         JsonFieldsValidator.createProviderKey(cloudProviderFormData.code),
         cloudProviderFormData.config);
+    // Hack to ensure old API remains functional.
+    Provider reqProvider = new Provider();
+    reqProvider.code = cloudProviderFormData.code.toString();
+    CloudMetadata.setCloudProviderMetadataFromConfig(reqProvider, cloudProviderFormData.config);
     Provider provider =
         cloudProviderHandler.createProvider(
             Customer.getOrBadRequest(customerUUID),
             cloudProviderFormData.code,
             cloudProviderFormData.name,
-            cloudProviderFormData.config,
+            reqProvider,
             cloudProviderFormData.region);
     auditService()
         .createAuditEntryWithReqBody(

@@ -265,8 +265,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = buildProviderReq("gcp", "Google");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("use_host_vpc", "true");
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
-    provider.details.setCloudMetadata(cloudMetadata);
+    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
+    // provider.details.setCloudMetadata(cloudMetadata);
     provider = createProviderTest(provider, ImmutableList.of("region1"), UUID.randomUUID());
     assertEquals("234234", provider.hostVpcId);
     assertEquals("234234", provider.destVpcId);
@@ -406,8 +406,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
       reqConfig.put("YB_HOME_DIR", "/bar");
     }
     providerReq.customerUUID = customer.uuid;
-    CloudMetadata cloudMetdata = CloudMetadata.getCloudProvider(code, reqConfig);
-    providerReq.details.setCloudMetadata(cloudMetdata);
+    // CloudMetadata cloudMetdata = CloudMetadata.getCloudProvider(code, reqConfig);
+    // providerReq.details.setCloudMetadata(cloudMetdata);
     Provider createdProvider =
         createProviderTest(providerReq, REGION_CODES_FROM_CLOUD_API, UUID.randomUUID());
     Map<String, String> config = createdProvider.getUnmaskedConfig();
@@ -695,8 +695,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("project_id", "test-project");
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
-    provider.details.setCloudMetadata(cloudMetadata);
+    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
+    // provider.details.setCloudMetadata(cloudMetadata);
     provider.save();
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
 
@@ -725,8 +725,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("GCE_HOST_PROJECT", "test-project");
-    CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
-    provider.details.setCloudMetadata(cloudMetadata);
+    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
+    // provider.details.setCloudMetadata(cloudMetadata);
     provider.save();
 
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());

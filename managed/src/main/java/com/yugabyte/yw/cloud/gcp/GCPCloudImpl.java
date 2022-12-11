@@ -31,13 +31,12 @@ import java.util.stream.Collectors;
 public class GCPCloudImpl implements CloudAPI {
 
   public static final String PROJECT_ID_PROPERTY = "project_id";
-  public static final String CLIENT_EMAIL_PROPERTY = "client_email";
   public static final String CUSTOM_GCE_NETWORK_PROPERTY = "CUSTOM_GCE_NETWORK";
-  public static final String GCE_HOST_PROJECT_PROPERTY = "GCE_HOST_PROJECT";
   public static final String GCE_PROJECT_PROPERTY = "GCE_PROJECT";
-  public static final String GCE_EMAIL_PROPERTY = "GCE_EMAIL";
   public static final String GOOGLE_APPLICATION_CREDENTIALS_PROPERTY =
       "GOOGLE_APPLICATION_CREDENTIALS";
+  public static final String GOOGLE_APPLICATION_CREDENTIALS_CONTENT =
+      "GOOGLE_APPLICATION_CREDENTIALS_CONTENT";
 
   /**
    * Find the instance types offered in availabilityZones.
