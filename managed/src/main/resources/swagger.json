@@ -1227,9 +1227,6 @@
         },
         "AZURE_TENANT_ID" : {
           "type" : "string"
-        },
-        "HOSTED_ZONE_ID" : {
-          "type" : "string"
         }
       },
       "type" : "object"
@@ -3710,9 +3707,6 @@
         "gce_project" : {
           "type" : "string"
         },
-        "use_host_credentials" : {
-          "type" : "boolean"
-        },
         "use_host_vpc" : {
           "type" : "string"
         }
@@ -4327,12 +4321,6 @@
           "type" : "string"
         },
         "KUBECONFIG_STORAGE_CLASSES" : {
-          "type" : "string"
-        },
-        "kubeconfig_PULL_SECRET_CONTENT" : {
-          "type" : "string"
-        },
-        "kubeconfig_PULL_SECRET_NAME" : {
           "type" : "string"
         }
       },

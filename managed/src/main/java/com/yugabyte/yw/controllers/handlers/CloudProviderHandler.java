@@ -752,8 +752,11 @@ public class CloudProviderHandler {
     switch (provider.getCloudCode()) {
       case gcp:
         GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
-        if (gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
+        if (gcpMetadata == null) {
+          return;
+        }
 
+        if (gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
           JsonNode currentHostInfo = queryHelper.getCurrentHostInfo(provider.getCloudCode());
           if (!hasHostInfo(currentHostInfo)) {
             throw new IllegalStateException("Cannot use host vpc as there is no vpc");

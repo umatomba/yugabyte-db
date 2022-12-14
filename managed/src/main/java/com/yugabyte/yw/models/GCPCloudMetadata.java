@@ -44,11 +44,6 @@ public class GCPCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String useHostVPC = "false";
 
-  // Use case?
-  @JsonProperty("use_host_credentials")
-  @ApiModelProperty
-  public Boolean useHostCredentials = false;
-
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();

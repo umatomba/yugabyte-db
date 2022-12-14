@@ -40,11 +40,13 @@ public class AzureCloudMetadata implements CloudMetadata {
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    envVars.put("AZURE_TENANT_ID", this.azuTenantId);
-    envVars.put("AZURE_CLIENT_ID", this.azuClientId);
-    envVars.put("AZURE_CLIENT_SECRET", this.azuClientSecret);
-    envVars.put("AZURE_SUBSCRIPTION_ID", this.azuSubscriptionId);
-    envVars.put("AZURE_RG", this.azuRG);
+    if (this.azuClientId != null) {
+      envVars.put("AZURE_TENANT_ID", this.azuTenantId);
+      envVars.put("AZURE_CLIENT_ID", this.azuClientId);
+      envVars.put("AZURE_CLIENT_SECRET", this.azuClientSecret);
+      envVars.put("AZURE_SUBSCRIPTION_ID", this.azuSubscriptionId);
+      envVars.put("AZURE_RG", this.azuRG);
+    }
 
     return envVars;
   }

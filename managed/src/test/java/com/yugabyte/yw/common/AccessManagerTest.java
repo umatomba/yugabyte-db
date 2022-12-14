@@ -296,8 +296,7 @@ public class AccessManagerTest extends FakeDBApplication {
     Map<String, String> config = new HashMap<>();
     config.put("AWS_ACCESS_KEY_ID", "ACCESS-KEY");
     config.put("AWS_SECRET_ACCESS_KEY", "ACCESS-SECRET");
-    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("aws", config);
-    // defaultProvider.details.setCloudMetadata(cloudMetadata);
+    CloudMetadata.setCloudProviderMetadataFromConfig(defaultProvider, config);
     defaultProvider.save();
 
     createTempFile(TMP_KEYS_PATH, "private.key", "test data");
