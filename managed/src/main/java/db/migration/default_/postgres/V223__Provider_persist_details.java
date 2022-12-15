@@ -14,20 +14,23 @@ import com.yugabyte.yw.models.ProviderDetails;
 
 import org.flywaydb.core.api.migration.jdbc.BaseJdbcMigration;
 
-public class V221__Provider_persist_details extends BaseJdbcMigration {
+public class V223__Provider_persist_details extends BaseJdbcMigration {
 
   @Override
   public void migrate(Connection connection) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     String selectStmt =
-        "SELECT uuid, pgp_sym_decrypt(config, 'provider::config') as config, code FROM provider";
+        "SELECT uuid, customer_uuid, pgp_sym_decrypt(config, 'provider::config') as config, code FROM provider";
     ResultSet providers = connection.createStatement().executeQuery(selectStmt);
 
     while (providers.next()) {
       String providerUUID = providers.getString("uuid");
       String customerUUID = providers.getString("customer_uuid");
+      String providerConfig = providers.getString("config");
+      if (providerConfig == null) {
+        continue;
+      }
       Map<String, String> config = mapper.readValue(providers.getString("config"), Map.class);
-
       Provider provider =
           Provider.getOrBadRequest(UUID.fromString(customerUUID), UUID.fromString(providerUUID));
       provider.details = new ProviderDetails();

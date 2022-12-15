@@ -152,17 +152,10 @@ public class CloudProviderHandler {
           BAD_REQUEST, String.format("Provider with the name %s already exists", providerName));
     }
 
-    Provider provider;
-    // Support Backward Compatiblity.
-    if (reqProvider.config != null) {
-      Map<String, String> providerConfig = reqProvider.getUnmaskedConfig();
-      provider = Provider.create(customer.uuid, providerCode, providerName, providerConfig);
-    } else {
-      provider = Provider.create(customer.uuid, providerCode, providerName, reqProvider.details);
-    }
-
+    Provider provider =
+        Provider.create(customer.uuid, providerCode, providerName, reqProvider.details);
     maybeUpdateVPC(provider);
-    // ToDo: to be fixed.
+
     Map<String, String> providerConfig = provider.getUnmaskedConfig();
     if (!providerConfig.isEmpty()) {
       // Perform for all cloud providers as it does validation.
