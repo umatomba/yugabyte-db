@@ -14,7 +14,7 @@ import com.yugabyte.yw.models.ProviderDetails;
 
 import org.flywaydb.core.api.migration.jdbc.BaseJdbcMigration;
 
-public class V223__Provider_persist_details extends BaseJdbcMigration {
+public class V224__Provider_persist_details extends BaseJdbcMigration {
 
   @Override
   public void migrate(Connection connection) throws Exception {

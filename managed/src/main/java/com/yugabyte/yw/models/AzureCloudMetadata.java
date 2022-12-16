@@ -3,10 +3,10 @@ package com.yugabyte.yw.models;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,23 +16,23 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureCloudMetadata implements CloudMetadata {
 
-  @JsonProperty("AZURE_TENANT_ID")
+  @JsonAlias("AZURE_TENANT_ID")
   @ApiModelProperty
   public String azuTenantId;
 
-  @JsonProperty("AZURE_CLIENT_ID")
+  @JsonAlias("AZURE_CLIENT_ID")
   @ApiModelProperty
   public String azuClientId;
 
-  @JsonProperty("AZURE_CLIENT_SECRET")
+  @JsonAlias("AZURE_CLIENT_SECRET")
   @ApiModelProperty
   public String azuClientSecret;
 
-  @JsonProperty("AZURE_SUBSCRIPTION_ID")
+  @JsonAlias("AZURE_SUBSCRIPTION_ID")
   @ApiModelProperty
   public String azuSubscriptionId;
 
-  @JsonProperty("AZURE_RG")
+  @JsonAlias("AZURE_RG")
   @ApiModelProperty
   public String azuRG;
 

@@ -3,34 +3,32 @@ package com.yugabyte.yw.models;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AWSCloudMetadata implements CloudMetadata {
 
-  @JsonProperty("AWS_ACCESS_KEY_ID")
+  @JsonAlias("AWS_ACCESS_KEY_ID")
   @ApiModelProperty
   public String awsAccessKeyID;
 
-  @JsonProperty("AWS_SECRET_ACCESS_KEY")
+  @JsonAlias("AWS_SECRET_ACCESS_KEY")
   @ApiModelProperty
   public String awsAccessKeySecret;
 
-  @JsonProperty("HOSTED_ZONE_ID")
+  @JsonAlias("HOSTED_ZONE_ID")
   @ApiModelProperty
   public String awsHostedZoneId;
 
-  @JsonProperty("HOSTED_ZONE_NAME")
+  @JsonAlias("HOSTED_ZONE_NAME")
   @ApiModelProperty
   public String awsHostedZoneName;
 
