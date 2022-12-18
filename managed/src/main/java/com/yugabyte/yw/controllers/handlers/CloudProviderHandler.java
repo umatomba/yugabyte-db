@@ -29,6 +29,7 @@ import com.typesafe.config.Config;
 import com.yugabyte.yw.cloud.CloudAPI;
 import com.yugabyte.yw.cloud.aws.AWSInitializer;
 import com.yugabyte.yw.cloud.azu.AZUInitializer;
+import com.yugabyte.yw.cloud.gcp.GCPCloudImpl;
 import com.yugabyte.yw.cloud.gcp.GCPInitializer;
 import com.yugabyte.yw.commissioner.Commissioner;
 import com.yugabyte.yw.commissioner.Common;
@@ -384,9 +385,9 @@ public class CloudProviderHandler {
   private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
     // ToDo: Fix the edit provider part.
     GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+    JsonNode gcpCredentials = gcpMetadata.getCredentialJSON();
     String gcpCredentialsFile =
-        accessManager.createGCPCredentialsFile(
-            provider.uuid, gcpMetadata.getGceApplicationCredentials());
+        accessManager.createGCPCredentialsFile(provider.uuid, gcpCredentials);
     if (gcpCredentialsFile != null) {
       gcpMetadata.setGceApplicationCredentialsPath(gcpCredentialsFile);
     }
@@ -749,7 +750,8 @@ public class CloudProviderHandler {
           return;
         }
 
-        if (gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
+        if (gcpMetadata.getUseHostVPC() != null
+            && gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
           JsonNode currentHostInfo = queryHelper.getCurrentHostInfo(provider.getCloudCode());
           if (!hasHostInfo(currentHostInfo)) {
             throw new IllegalStateException("Cannot use host vpc as there is no vpc");
@@ -763,9 +765,16 @@ public class CloudProviderHandler {
           // store it somewhere and the config is the easiest place to put it.
           // As such, since all the
           // config is loaded up as env vars anyway, might as well use in in devops like that...
+
           gcpMetadata.setCustomGceNetwork(network);
           if (StringUtils.isBlank(gcpMetadata.getGceProject())) {
             gcpMetadata.setGceProject(currentHostInfo.get("host_project").asText());
+
+            // Backward compatiblity
+            if (provider.config != null) {
+              provider.config.put(
+                  GCPCloudImpl.GCE_PROJECT_PROPERTY, currentHostInfo.get("host_project").asText());
+            }
           }
         }
         break;
@@ -801,7 +810,7 @@ public class CloudProviderHandler {
         //  if (anyProviderRegion == null || anyProviderRegion.isEmpty()) {
         //    throw new YWServiceException(BAD_REQUEST, "Must have at least one region");
         //  }
-        String hostedZoneId = provider.getHostedZoneId();
+        String hostedZoneId = providerConfig.get("awsHostedZoneId");
         if (hostedZoneId != null && hostedZoneId.length() != 0) {
           validateAndUpdateHostedZone(provider, hostedZoneId);
         }

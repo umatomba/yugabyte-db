@@ -12,13 +12,15 @@ import com.yugabyte.yw.models.CloudMetadata;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.ProviderDetails;
 
+import play.libs.Json;
+
 import org.flywaydb.core.api.migration.jdbc.BaseJdbcMigration;
 
 public class V224__Provider_persist_details extends BaseJdbcMigration {
 
   @Override
   public void migrate(Connection connection) throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = Json.mapper();
     String selectStmt =
         "SELECT uuid, customer_uuid, pgp_sym_decrypt(config, 'provider::config') as config, code FROM provider";
     ResultSet providers = connection.createStatement().executeQuery(selectStmt);

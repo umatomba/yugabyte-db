@@ -16,6 +16,18 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureCloudMetadata implements CloudMetadata {
 
+  @JsonIgnore
+  final Map<String, String> configKeyMap =
+      new HashMap<String, String>() {
+        {
+          put("azuTenantId", "AZURE_TENANT_ID");
+          put("azuClientId", "AZURE_CLIENT_ID");
+          put("azuClientSecret", "AZURE_CLIENT_SECRET");
+          put("azuSubscriptionId", "AZURE_SUBSCRIPTION_ID");
+          put("azuRG", "AZURE_RG");
+        }
+      };
+
   @JsonAlias("AZURE_TENANT_ID")
   @ApiModelProperty
   public String azuTenantId;
@@ -24,6 +36,7 @@ public class AzureCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String azuClientId;
 
+  // ToDo: Masking
   @JsonAlias("AZURE_CLIENT_SECRET")
   @ApiModelProperty
   public String azuClientSecret;
@@ -40,14 +53,19 @@ public class AzureCloudMetadata implements CloudMetadata {
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    if (this.azuClientId != null) {
-      envVars.put("AZURE_TENANT_ID", this.azuTenantId);
-      envVars.put("AZURE_CLIENT_ID", this.azuClientId);
-      envVars.put("AZURE_CLIENT_SECRET", this.azuClientSecret);
-      envVars.put("AZURE_SUBSCRIPTION_ID", this.azuSubscriptionId);
-      envVars.put("AZURE_RG", this.azuRG);
+    if (azuClientId != null) {
+      envVars.put("AZURE_TENANT_ID", azuTenantId);
+      envVars.put("AZURE_CLIENT_ID", azuClientId);
+      envVars.put("AZURE_CLIENT_SECRET", azuClientSecret);
+      envVars.put("AZURE_SUBSCRIPTION_ID", azuSubscriptionId);
+      envVars.put("AZURE_RG", azuRG);
     }
 
     return envVars;
+  }
+
+  @JsonIgnore
+  public Map<String, String> getConfigKeyMap() {
+    return configKeyMap;
   }
 }

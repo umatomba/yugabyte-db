@@ -49,6 +49,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.yugabyte.yw.cloud.CloudAPI;
 import com.yugabyte.yw.common.kms.util.AwsEARServiceUtil;
+import com.yugabyte.yw.models.AWSCloudMetadata;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.helpers.NodeID;
@@ -103,8 +104,8 @@ public class AWSCloudImpl implements CloudAPI {
 
   // TODO: move to some common utils
   private static AWSCredentialsProvider getCredsOrFallbackToDefault(Map<String, String> config) {
-    String accessKeyId = config.get("AWS_ACCESS_KEY_ID");
-    String secretAccessKey = config.get("AWS_SECRET_ACCESS_KEY");
+    String accessKeyId = config.get("awsAccessKeyID");
+    String secretAccessKey = config.get("awsAccessKeySecret");
     if (!Strings.isNullOrEmpty(accessKeyId) && !Strings.isNullOrEmpty(secretAccessKey)) {
       return new AWSStaticCredentialsProvider(
           new BasicAWSCredentials(accessKeyId, secretAccessKey));
@@ -159,7 +160,6 @@ public class AWSCloudImpl implements CloudAPI {
 
   @Override
   public boolean isValidCreds(Provider provider, String region) {
-    // ToDo
     Map<String, String> config = provider.getUnmaskedConfig();
     try {
       AmazonEC2 ec2Client = getEC2ClientInternal(config, region);

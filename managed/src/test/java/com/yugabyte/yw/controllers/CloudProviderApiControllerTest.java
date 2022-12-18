@@ -269,9 +269,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     provider = createProviderTest(provider, ImmutableList.of("region1"), UUID.randomUUID());
     assertEquals("234234", provider.hostVpcId);
     assertEquals("234234", provider.destVpcId);
-    assertEquals("PROJ", provider.getUnmaskedConfig().get("gce_project"));
-    assertEquals(
-        "234234", provider.getUnmaskedConfig().get(GCPCloudImpl.CUSTOM_GCE_NETWORK_PROPERTY));
+    assertEquals("PROJ", provider.getUnmaskedConfig().get("gceProject"));
+    assertEquals("234234", provider.getUnmaskedConfig().get("customGceNetwork"));
   }
 
   @Test
@@ -395,8 +394,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
       // Note that we do not wrap the GCP config in API requests. Caller should do extracting
       // config file details and putting it in the config map
       reqConfig.put("use_host_vpc", "true");
-      reqConfig.put("gce_project", "project");
-      reqConfig.put("gce_credential_file_path", "/tmp/credentials.json");
+      reqConfig.put("host_project_id", "project");
+      reqConfig.put("config_file_path", "/tmp/credentials.json");
     } else if (code.equals("aws")) {
       reqConfig.put("AWS_ACCESS_KEY_ID", "bar");
       reqConfig.put("AWS_SECRET_ACCESS_KEY", "bar2");
@@ -681,11 +680,11 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
             + "\"code\":\"gcp\","
             + "\"name\":\"test\","
             + "\"details\": { \"gcpCloudMetadata\": {"
-            + "\"gce_project\": \"test-project\" } }"
+            + "\"gceProject\": \"test-project\" } }"
             + "}";
     Result result =
         assertPlatformException(() -> patchProvider(Json.parse(jsonString), provider.uuid));
-    assertBadRequest(result, "Unknown keys found: [gce_project]");
+    assertBadRequest(result, "Unknown keys found: [gceProject]");
   }
 
   // to be fixed.
@@ -723,9 +722,8 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     when(mockAccessManager.createGCPCredentialsFile(any(), any())).thenReturn("/test-path");
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
-    reqConfig.put("GCE_HOST_PROJECT", "test-project");
-    // CloudMetadata cloudMetadata = CloudMetadata.getCloudProvider("gcp", reqConfig);
-    // provider.details.setCloudMetadata(cloudMetadata);
+    reqConfig.put("gceProject", "test-project");
+    CloudMetadata.setCloudProviderMetadataFromConfig(provider, reqConfig);
     provider.save();
 
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
@@ -733,7 +731,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
     ObjectNode details = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("GCE_HOST_PROJECT", "test-project-updated");
+    cloudMetadataJson.put("gceProject", "test-project-updated");
     details.set("gcpCloudMetadata", cloudMetadataJson);
     providerJson.set("details", details);
 

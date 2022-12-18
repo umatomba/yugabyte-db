@@ -16,6 +16,18 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AWSCloudMetadata implements CloudMetadata {
 
+  @JsonIgnore
+  final Map<String, String> configKeyMap =
+      new HashMap<String, String>() {
+        {
+          put("awsAccessKeyID", "AWS_ACCESS_KEY_ID");
+          put("awsAccessKeySecret", "AWS_SECRET_ACCESS_KEY");
+          put("awsHostedZoneId", "HOSTED_ZONE_ID");
+          put("awsHostedZoneName", "HOSTED_ZONE_NAME");
+        }
+      };
+
+  // ToDo: Add Masking
   @JsonAlias("AWS_ACCESS_KEY_ID")
   @ApiModelProperty
   public String awsAccessKeyID;
@@ -36,10 +48,16 @@ public class AWSCloudMetadata implements CloudMetadata {
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    if (this.awsAccessKeyID != null) {
-      envVars.put("AWS_ACCESS_KEY_ID", this.awsAccessKeyID);
-      envVars.put("AWS_SECRET_ACCESS_KEY", this.awsAccessKeySecret);
+    if (awsAccessKeyID != null) {
+      envVars.put("AWS_ACCESS_KEY_ID", awsAccessKeyID);
+      envVars.put("AWS_SECRET_ACCESS_KEY", awsAccessKeySecret);
     }
+
     return envVars;
+  }
+
+  @JsonIgnore
+  public Map<String, String> getConfigKeyMap() {
+    return configKeyMap;
   }
 }

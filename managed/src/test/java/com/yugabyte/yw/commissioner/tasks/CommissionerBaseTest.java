@@ -111,6 +111,7 @@ public abstract class CommissionerBaseTest extends PlatformGuiceApplicationBaseT
   protected Provider defaultProvider;
   protected Provider gcpProvider;
   protected Provider onPremProvider;
+  protected Provider kubernetesProvider;
   protected SettableRuntimeConfigFactory factory;
 
   protected Commissioner commissioner;
@@ -123,6 +124,7 @@ public abstract class CommissionerBaseTest extends PlatformGuiceApplicationBaseT
     defaultProvider = ModelFactory.awsProvider(defaultCustomer);
     gcpProvider = ModelFactory.gcpProvider(defaultCustomer);
     onPremProvider = ModelFactory.onpremProvider(defaultCustomer);
+    kubernetesProvider = ModelFactory.kubernetesProvider(defaultCustomer);
     metricService = app.injector().instanceOf(MetricService.class);
     alertService = app.injector().instanceOf(AlertService.class);
     alertDefinitionService = app.injector().instanceOf(AlertDefinitionService.class);

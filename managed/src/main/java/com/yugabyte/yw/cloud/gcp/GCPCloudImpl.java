@@ -19,6 +19,8 @@ import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.helpers.NodeID;
 import lombok.extern.slf4j.Slf4j;
+import play.libs.Json;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -70,8 +72,8 @@ public class GCPCloudImpl implements CloudAPI {
       return true;
     }
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode gcpCredentials = gcpCloudMetadata.getGceApplicationCredentials();
+      ObjectMapper mapper = Json.mapper();
+      JsonNode gcpCredentials = gcpCloudMetadata.getCredentialJSON();
       GoogleCredentials credentials =
           GoogleCredentials.fromStream(
               new ByteArrayInputStream(mapper.writeValueAsBytes(gcpCredentials)));

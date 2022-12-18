@@ -80,15 +80,15 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
 
   private void setupUniverseMultiAZ(
       boolean setMasters, boolean enabledYEDIS, boolean setNamespace, boolean newNamingStyle) {
-    Region r = Region.create(defaultProvider, "region-1", "PlacementRegion-1", "default-image");
+    Region r = Region.create(kubernetesProvider, "region-1", "PlacementRegion-1", "default-image");
     az1 = AvailabilityZone.createOrThrow(r, "az-1", "PlacementAZ-1", "subnet-1");
     az2 = AvailabilityZone.createOrThrow(r, "az-2", "PlacementAZ-2", "subnet-2");
     az3 = AvailabilityZone.createOrThrow(r, "az-3", "PlacementAZ-3", "subnet-3");
     InstanceType i =
         InstanceType.upsert(
-            defaultProvider.uuid, "c3.xlarge", 10, 5.5, new InstanceType.InstanceTypeDetails());
+            kubernetesProvider.uuid, "c3.xlarge", 10, 5.5, new InstanceType.InstanceTypeDetails());
     UniverseDefinitionTaskParams.UserIntent userIntent =
-        getTestUserIntent(r, defaultProvider, i, 3);
+        getTestUserIntent(r, kubernetesProvider, i, 3);
     userIntent.replicationFactor = 3;
     userIntent.masterGFlags = new HashMap<>();
     userIntent.tserverGFlags = new HashMap<>();
@@ -131,8 +131,8 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
 
     } else {
       config.put("KUBECONFIG", "test");
-      defaultProvider.setConfig(config);
-      defaultProvider.save();
+      kubernetesProvider.setConfig(config);
+      kubernetesProvider.save();
 
       // Copying provider config
       config1.putAll(config);
@@ -202,13 +202,13 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
   }
 
   private void setupUniverse(boolean setMasters, boolean enabledYEDIS, boolean setNamespace) {
-    Region r = Region.create(defaultProvider, "region-1", "PlacementRegion-1", "default-image");
+    Region r = Region.create(kubernetesProvider, "region-1", "PlacementRegion-1", "default-image");
     AvailabilityZone az = AvailabilityZone.createOrThrow(r, "az-1", "PlacementAZ-1", "subnet-1");
     InstanceType i =
         InstanceType.upsert(
-            defaultProvider.uuid, "c3.xlarge", 10, 5.5, new InstanceType.InstanceTypeDetails());
+            kubernetesProvider.uuid, "c3.xlarge", 10, 5.5, new InstanceType.InstanceTypeDetails());
     UniverseDefinitionTaskParams.UserIntent userIntent =
-        getTestUserIntent(r, defaultProvider, i, 3);
+        getTestUserIntent(r, kubernetesProvider, i, 3);
     userIntent.replicationFactor = 3;
     userIntent.masterGFlags = new HashMap<>();
     userIntent.tserverGFlags = new HashMap<>();
@@ -233,8 +233,8 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
       az.save();
     } else {
       config.put("KUBECONFIG", "test");
-      defaultProvider.setConfig(config);
-      defaultProvider.save();
+      kubernetesProvider.setConfig(config);
+      kubernetesProvider.save();
     }
 
     String podsString =
@@ -432,7 +432,7 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
         .helmInstall(
             eq(YB_SOFTWARE_VERSION),
             eq(config1),
-            eq(defaultProvider.uuid),
+            eq(kubernetesProvider.uuid),
             eq(nodePrefix1),
             eq(ns1),
             expectedOverrideFile.capture());
@@ -440,7 +440,7 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
         .helmInstall(
             eq(YB_SOFTWARE_VERSION),
             eq(config2),
-            eq(defaultProvider.uuid),
+            eq(kubernetesProvider.uuid),
             eq(nodePrefix2),
             eq(ns2),
             expectedOverrideFile.capture());
@@ -448,7 +448,7 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
         .helmInstall(
             eq(YB_SOFTWARE_VERSION),
             eq(config3),
-            eq(defaultProvider.uuid),
+            eq(kubernetesProvider.uuid),
             eq(nodePrefix3),
             eq(ns3),
             expectedOverrideFile.capture());
@@ -510,7 +510,7 @@ public class CreateKubernetesUniverseTest extends CommissionerBaseTest {
         .helmInstall(
             eq(YB_SOFTWARE_VERSION),
             eq(config),
-            eq(defaultProvider.uuid),
+            eq(kubernetesProvider.uuid),
             eq(NODE_PREFIX),
             eq(ns),
             expectedOverrideFile.capture());

@@ -16,6 +16,14 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OnPremCloudMetadata implements CloudMetadata {
 
+  @JsonIgnore
+  final Map<String, String> configKeyMap =
+      new HashMap<String, String>() {
+        {
+          put("ybHomeDir", "YB_HOME_DIR");
+        }
+      };
+
   @JsonAlias("YB_HOME_DIR")
   @ApiModelProperty
   public String ybHomeDir;
@@ -24,7 +32,15 @@ public class OnPremCloudMetadata implements CloudMetadata {
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    envVars.put("YB_HOME_DIR", this.ybHomeDir);
+    if (ybHomeDir != null) {
+      envVars.put("YB_HOME_DIR", ybHomeDir);
+    }
+
     return envVars;
+  }
+
+  @JsonIgnore
+  public Map<String, String> getConfigKeyMap() {
+    return configKeyMap;
   }
 }

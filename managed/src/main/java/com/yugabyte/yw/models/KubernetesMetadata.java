@@ -1,5 +1,6 @@
 package com.yugabyte.yw.models;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,6 +18,24 @@ import lombok.extern.slf4j.Slf4j;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class KubernetesMetadata implements CloudMetadata {
+
+  @JsonIgnore
+  final Map<String, String> configKeyMap =
+      new HashMap<String, String>() {
+        {
+          put("kubeConfigProvider", "KUBECONFIG_PROVIDER");
+          put("kubeConfigServiceAccount", "KUBECONFIG_SERVICE_ACCOUNT");
+          put("kubeConfigImageRegistry", "KUBECONFIG_IMAGE_REGISTRY");
+          put("kubeConfigImagePullSecretName", "KUBECONFIG_IMAGE_PULL_SECRET_NAME");
+          put("kubeConfigPullSecret", "KUBECONFIG_PULL_SECRET");
+          put("kubeConfigName", "KUBECONFIG_NAME");
+          put("kubeConfigContent", "KUBECONFIG_CONTENT");
+          put("kubeConfig", "KUBECONFIG");
+          put("kubernetesStorageClass", "KUBECONFIG_STORAGE_CLASSES");
+          put("kubeConfigPullSecretContent", "KUBECONFIG_PULL_SECRET_CONTENT");
+          put("kubeConfigPullSecretName", "KUBECONFIG_PULL_SECRET_NAME");
+        }
+      };
 
   @JsonProperty("KUBECONFIG_PROVIDER")
   @ApiModelProperty
@@ -67,5 +86,10 @@ public class KubernetesMetadata implements CloudMetadata {
   public Map<String, String> getEnvVars() {
     // pass
     return null;
+  }
+
+  @JsonIgnore
+  public Map<String, String> getConfigKeyMap() {
+    return configKeyMap;
   }
 }

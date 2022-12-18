@@ -8,8 +8,6 @@ import static io.swagger.annotations.ApiModelProperty.AccessMode.READ_WRITE;
 import static play.mvc.Http.Status.BAD_REQUEST;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -92,7 +90,7 @@ public class Provider extends Model {
   }
 
   /** @deprecated - Use details.metadata instead */
-  @Deprecated
+  // @Deprecated
   @Column(nullable = false, columnDefinition = "TEXT")
   @DbJson
   @Encrypted
@@ -218,12 +216,10 @@ public class Provider extends Model {
 
   @Deprecated
   @JsonProperty("config")
-  @JsonIgnore
   public void setConfig(Map<String, String> configMap) {
     CloudMetadata.setCloudProviderMetadataFromConfig(this, configMap);
   }
 
-  @JsonProperty("config")
   @JsonIgnore
   public Map<String, String> getMaskedConfig() {
     return maskConfigNew(this.getUnmaskedConfig());
@@ -231,17 +227,16 @@ public class Provider extends Model {
 
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
-    // Return unmasked provider details.
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = Json.mapper();
     CloudMetadata cloudConfigMetadata = CloudMetadata.getCloudProviderMetadata(this);
     if (cloudConfigMetadata != null) {
-      Map<String, String> cloudConfig = mapper.convertValue(cloudConfigMetadata, Map.class);
+      Map<String, String> cloudConfig =
+          mapper.convertValue(cloudConfigMetadata, new TypeReference<HashMap<String, String>>() {});
       if (cloudConfig != null) {
         return cloudConfig;
       }
     }
-    if (config == null) return new HashMap<>();
-    return config;
+    return new HashMap<>();
   }
 
   @JsonIgnore
@@ -437,14 +432,13 @@ public class Provider extends Model {
 
   @ApiModelProperty(required = false)
   public String getHostedZoneId() {
-    return getUnmaskedConfig()
-        .getOrDefault("HOSTED_ZONE_ID", getUnmaskedConfig().get("AWS_HOSTED_ZONE_ID"));
+    return getUnmaskedConfig().getOrDefault("awsHostedZoneId", null);
   }
 
+  // Needed now?
   @ApiModelProperty(required = false)
   public String getHostedZoneName() {
-    return getUnmaskedConfig()
-        .getOrDefault("HOSTED_ZONE_NAME", getUnmaskedConfig().get("AWS_HOSTED_ZONE_NAME"));
+    return getUnmaskedConfig().getOrDefault("awsHostedZoneName", null);
   }
 
   /**

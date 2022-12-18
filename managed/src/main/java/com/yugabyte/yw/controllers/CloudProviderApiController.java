@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.Throwables;
 import com.google.inject.Inject;
 import com.yugabyte.yw.commissioner.Common.CloudType;
@@ -35,6 +36,7 @@ import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.forms.RotateAccessKeyFormData;
 import com.yugabyte.yw.forms.ScheduledAccessKeyRotateFormData;
 import com.yugabyte.yw.models.Audit;
+import com.yugabyte.yw.models.CloudMetadata;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
@@ -67,13 +69,17 @@ public class CloudProviderApiController extends AuthenticatedController {
       nickname = "getListOfProviders")
   public Result list(UUID customerUUID, String name, String code) {
     CloudType providerCode = code == null ? null : CloudType.valueOf(code);
-    return PlatformResults.withData(Provider.getAll(customerUUID, name, providerCode));
+    List<Provider> providers = Provider.getAll(customerUUID, name, providerCode);
+    providers.forEach(CloudMetadata::mayBeMassageResponse);
+    return PlatformResults.withData(providers);
   }
 
   @ApiOperation(value = "Get a cloud provider", response = Provider.class, nickname = "getProvider")
   public Result index(UUID customerUUID, UUID providerUUID) {
     Customer.getOrBadRequest(customerUUID);
-    return PlatformResults.withData(Provider.getOrBadRequest(customerUUID, providerUUID));
+    Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
+    CloudMetadata.mayBeMassageResponse(provider);
+    return PlatformResults.withData(provider);
   }
 
   @ApiOperation(
@@ -170,7 +176,7 @@ public class CloudProviderApiController extends AuthenticatedController {
           dataType = "com.yugabyte.yw.models.Provider",
           required = true))
   public Result create(UUID customerUUID) {
-    JsonNode requestBody = request().body().asJson();
+    JsonNode requestBody = mayBeMassageRequest(request().body().asJson());
     Provider reqProvider = formFactory.getFormDataOrBadRequest(requestBody, Provider.class);
     Customer customer = Customer.getOrBadRequest(customerUUID);
     reqProvider.customerUUID = customerUUID;
@@ -408,5 +414,31 @@ public class CloudProviderApiController extends AuthenticatedController {
             Audit.ActionType.Edit,
             request().body().asJson());
     return PlatformResults.withData(schedule);
+  }
+
+  public JsonNode mayBeMassageRequest(JsonNode requestBody) {
+    JsonNode details = requestBody.get("details");
+    if (details != null && !details.isNull()) {
+      // Transforming the credential file as String, as currently we read
+      // config as Map<String, String>. Once that is fixed, we can read this
+      // as JsonNode only.
+      ObjectNode detailsNode = (ObjectNode) details;
+      if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
+        Boolean shouldUseHostCredentials = false;
+        if (details.has("useHostCredentials")) {
+          shouldUseHostCredentials = true;
+        }
+        if (details.has("config_file_contents")) {
+          String configFileStringContent = details.get("config_file_contents").toString();
+          detailsNode.remove("config_file_contents");
+          if (!shouldUseHostCredentials) {
+            detailsNode.put("config_file_contents", configFileStringContent);
+          }
+        }
+        ((ObjectNode) requestBody).set("details", detailsNode);
+      }
+    }
+
+    return requestBody;
   }
 }
