@@ -182,6 +182,13 @@ public class CommonUtils {
         : value.replaceAll(maskRegex, "*");
   }
 
+  public static String getMaskedValue(String value) {
+    if (value == null) {
+      return value;
+    }
+    return value.replaceAll(maskRegex, "*");
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> T maskObject(T object) {
     try {

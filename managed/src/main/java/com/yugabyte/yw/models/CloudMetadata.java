@@ -3,7 +3,6 @@ package com.yugabyte.yw.models;
 import static com.yugabyte.yw.models.helpers.CommonUtils.maskConfigNew;
 import static play.mvc.Http.Status.BAD_REQUEST;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,29 +19,52 @@ public interface CloudMetadata {
 
   public Map<String, String> getEnvVars() throws Exception;
 
-  public Map<String, String> getConfigKeyMap();
+  public Map<String, String> getConfigMapForUIOnlyAPIs(Map<String, String> config);
+
+  public void maskSensitiveData();
 
   public static <T extends CloudMetadata> T getCloudProviderMetadata(Provider provider) {
-    if (provider.details == null) {
+    return getCloudProviderMetadata(provider, false);
+  }
+
+  public static <T extends CloudMetadata> T getCloudProviderMetadata(
+      Provider provider, Boolean maskSensitiveData) {
+    ProviderDetails providerDetails = provider.getUnmaskedProviderDetails();
+    if (providerDetails == null) {
       return null;
     }
     String providerType = provider.code;
     CloudType cloudType = CloudType.valueOf(providerType);
     switch (cloudType) {
       case aws:
-        AWSCloudMetadata awsMetadata = provider.details.awsCloudMetadata;
+        AWSCloudMetadata awsMetadata = providerDetails.awsCloudMetadata;
+        if (maskSensitiveData) {
+          awsMetadata.maskSensitiveData();
+        }
         return (T) awsMetadata;
       case gcp:
-        GCPCloudMetadata gcpMetadata = provider.details.gcpCloudMetadata;
+        GCPCloudMetadata gcpMetadata = providerDetails.gcpCloudMetadata;
+        if (maskSensitiveData) {
+          gcpMetadata.maskSensitiveData();
+        }
         return (T) gcpMetadata;
       case azu:
-        AzureCloudMetadata azuMetadata = provider.details.azureCloudMetadata;
+        AzureCloudMetadata azuMetadata = providerDetails.azureCloudMetadata;
+        if (maskSensitiveData) {
+          azuMetadata.maskSensitiveData();
+        }
         return (T) azuMetadata;
       case kubernetes:
-        KubernetesMetadata kubernetesMetadata = provider.details.kubernetesCloudMetadata;
+        KubernetesMetadata kubernetesMetadata = providerDetails.kubernetesCloudMetadata;
+        if (maskSensitiveData) {
+          kubernetesMetadata.maskSensitiveData();
+        }
         return (T) kubernetesMetadata;
       case onprem:
-        OnPremCloudMetadata onPremMetadata = provider.details.onPremCloudMetadata;
+        OnPremCloudMetadata onPremMetadata = providerDetails.onPremCloudMetadata;
+        if (maskSensitiveData) {
+          onPremMetadata.maskSensitiveData();
+        }
         return (T) onPremMetadata;
       case local:
         // Import Universe case
@@ -52,31 +74,36 @@ public interface CloudMetadata {
     }
   }
 
+  public static void maskProviderDetails(Provider provider) {
+    getCloudProviderMetadata(provider, true);
+  }
+
   public static void setCloudProviderMetadataFromConfig(
       Provider provider, Map<String, String> config) {
+    ProviderDetails providerDetails = provider.getUnmaskedProviderDetails();
     CloudType cloudType = CloudType.valueOf(provider.code);
     switch (cloudType) {
       case aws:
         AWSCloudMetadata awsCloudMetadata = mapper.convertValue(config, AWSCloudMetadata.class);
-        provider.details.setAwsCloudMetadata(awsCloudMetadata);
+        providerDetails.setAwsCloudMetadata(awsCloudMetadata);
         break;
       case gcp:
         GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(config, GCPCloudMetadata.class);
-        provider.details.setGcpCloudMetadata(gcpCloudMetadata);
+        providerDetails.setGcpCloudMetadata(gcpCloudMetadata);
         break;
       case azu:
         AzureCloudMetadata azuCloudMetadata = mapper.convertValue(config, AzureCloudMetadata.class);
-        provider.details.setAzureCloudMetadata(azuCloudMetadata);
+        providerDetails.setAzureCloudMetadata(azuCloudMetadata);
         break;
       case kubernetes:
         KubernetesMetadata kubernetesMetadata =
             mapper.convertValue(config, KubernetesMetadata.class);
-        provider.details.setKubernetesCloudMetadata(kubernetesMetadata);
+        providerDetails.setKubernetesCloudMetadata(kubernetesMetadata);
         break;
       case onprem:
         OnPremCloudMetadata onPremCloudMetadata =
             mapper.convertValue(config, OnPremCloudMetadata.class);
-        provider.details.setOnPremCloudMetadata(onPremCloudMetadata);
+        providerDetails.setOnPremCloudMetadata(onPremCloudMetadata);
         break;
       case local:
         // Import Universe case
@@ -120,33 +147,28 @@ public interface CloudMetadata {
 
   public static void mayBeMassageResponse(Provider p) {
     Map<String, String> config = p.getUnmaskedConfig();
-    Map<String, String> configKeyMap = new HashMap<>();
+    ProviderDetails providerDetails = p.getUnmaskedProviderDetails();
     CloudType cloudType = CloudType.valueOf(p.code);
     switch (cloudType) {
       case aws:
-        configKeyMap = p.details.awsCloudMetadata.getConfigKeyMap();
+        config = providerDetails.awsCloudMetadata.getConfigMapForUIOnlyAPIs(config);
         break;
       case gcp:
-        configKeyMap = p.details.gcpCloudMetadata.getConfigKeyMap();
+        config = providerDetails.gcpCloudMetadata.getConfigMapForUIOnlyAPIs(config);
         break;
       case azu:
-        configKeyMap = p.details.azureCloudMetadata.getConfigKeyMap();
+        config = providerDetails.azureCloudMetadata.getConfigMapForUIOnlyAPIs(config);
         break;
       case kubernetes:
-        configKeyMap = p.details.kubernetesCloudMetadata.getConfigKeyMap();
+        config = providerDetails.kubernetesCloudMetadata.getConfigMapForUIOnlyAPIs(config);
         break;
       case onprem:
-        configKeyMap = p.details.onPremCloudMetadata.getConfigKeyMap();
+        config = providerDetails.onPremCloudMetadata.getConfigMapForUIOnlyAPIs(config);
         break;
       case local:
         // Import Universe case
       default:
         break;
-    }
-    for (Map.Entry<String, String> entry : configKeyMap.entrySet()) {
-      if (config.get(entry.getKey()) != null) {
-        config.put(entry.getValue(), config.get(entry.getKey()));
-      }
     }
     p.config = maskConfigNew(config);
   }

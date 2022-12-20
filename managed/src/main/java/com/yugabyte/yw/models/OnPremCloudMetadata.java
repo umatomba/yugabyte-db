@@ -40,7 +40,18 @@ public class OnPremCloudMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public Map<String, String> getConfigKeyMap() {
-    return configKeyMap;
+  public Map<String, String> getConfigMapForUIOnlyAPIs(Map<String, String> config) {
+    for (Map.Entry<String, String> entry : configKeyMap.entrySet()) {
+      if (config.get(entry.getKey()) != null) {
+        config.put(entry.getValue(), config.get(entry.getKey()));
+        config.remove(entry.getKey());
+      }
+    }
+    return config;
+  }
+
+  @JsonIgnore
+  public void maskSensitiveData() {
+    // Pass
   }
 }

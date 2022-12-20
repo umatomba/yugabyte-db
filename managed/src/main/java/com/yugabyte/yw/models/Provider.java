@@ -225,6 +225,23 @@ public class Provider extends Model {
     return maskConfigNew(this.getUnmaskedConfig());
   }
 
+  @JsonProperty("details")
+  public void setProviderDetails(ProviderDetails providerDetails) {
+    this.details = providerDetails;
+  }
+
+  @JsonProperty("details")
+  public ProviderDetails getMaskProviderDetails() {
+    CloudMetadata.maskProviderDetails(this);
+    return details;
+  }
+
+  @JsonIgnore
+  public ProviderDetails getUnmaskedProviderDetails() {
+    if (details == null) return new ProviderDetails();
+    return details;
+  }
+
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     ObjectMapper mapper = Json.mapper();

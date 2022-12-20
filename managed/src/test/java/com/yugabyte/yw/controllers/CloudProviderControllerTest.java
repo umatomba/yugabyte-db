@@ -203,7 +203,7 @@ public class CloudProviderControllerTest extends FakeDBApplication {
             assertValue(config, "AWS_ACCESS_KEY_ID", "SE**********TA");
             assertValue(config, "AWS_SECRET_ACCESS_KEY", "SE**********TA");
           } else {
-            assertValue(config, "host_project_id", "BAR");
+            assertValue(config, "project_id", "BAR");
           }
         });
   }

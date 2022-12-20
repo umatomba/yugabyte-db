@@ -3702,6 +3702,7 @@
           "type" : "string"
         },
         "gceApplicationCredentialsPath" : {
+          "readOnly" : true,
           "type" : "string"
         },
         "gceProject" : {
@@ -3717,7 +3718,6 @@
           "type" : "string"
         }
       },
-      "required" : [ "gceApplicationCredentialsPath" ],
       "type" : "object"
     },
     "GCSLocation" : {
@@ -5996,7 +5996,7 @@
           "type" : "integer"
         }
       },
-      "required" : [ "details", "regions" ],
+      "required" : [ "regions" ],
       "type" : "object"
     },
     "ProviderDetails" : {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.yugabyte.yw.models.helpers.CommonUtils;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -65,7 +66,18 @@ public class AzureCloudMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public Map<String, String> getConfigKeyMap() {
-    return configKeyMap;
+  public Map<String, String> getConfigMapForUIOnlyAPIs(Map<String, String> config) {
+    for (Map.Entry<String, String> entry : configKeyMap.entrySet()) {
+      if (config.get(entry.getKey()) != null) {
+        config.put(entry.getValue(), config.get(entry.getKey()));
+        config.remove(entry.getKey());
+      }
+    }
+    return config;
+  }
+
+  @JsonIgnore
+  public void maskSensitiveData() {
+    this.azuClientSecret = CommonUtils.getMaskedValue(azuClientSecret);
   }
 }

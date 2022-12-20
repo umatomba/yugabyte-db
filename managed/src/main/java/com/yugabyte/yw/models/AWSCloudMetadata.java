@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.yugabyte.yw.models.helpers.CommonUtils;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,7 +28,6 @@ public class AWSCloudMetadata implements CloudMetadata {
         }
       };
 
-  // ToDo: Add Masking
   @JsonAlias("AWS_ACCESS_KEY_ID")
   @ApiModelProperty
   public String awsAccessKeyID;
@@ -57,7 +57,19 @@ public class AWSCloudMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public Map<String, String> getConfigKeyMap() {
-    return configKeyMap;
+  public Map<String, String> getConfigMapForUIOnlyAPIs(Map<String, String> config) {
+    for (Map.Entry<String, String> entry : configKeyMap.entrySet()) {
+      if (config.get(entry.getKey()) != null) {
+        config.put(entry.getValue(), config.get(entry.getKey()));
+        config.remove(entry.getKey());
+      }
+    }
+    return config;
+  }
+
+  @JsonIgnore
+  public void maskSensitiveData() {
+    this.awsAccessKeyID = CommonUtils.getMaskedValue(awsAccessKeyID);
+    this.awsAccessKeySecret = CommonUtils.getMaskedValue(awsAccessKeySecret);
   }
 }

@@ -7,13 +7,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.yugabyte.yw.models.helpers.CommonUtils;
 
 import io.swagger.annotations.ApiModelProperty;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -89,7 +88,14 @@ public class KubernetesMetadata implements CloudMetadata {
   }
 
   @JsonIgnore
-  public Map<String, String> getConfigKeyMap() {
-    return configKeyMap;
+  public Map<String, String> getConfigMapForUIOnlyAPIs(Map<String, String> config) {
+    return config;
+  }
+
+  @JsonIgnore
+  public void maskSensitiveData() {
+    this.kubeConfig = CommonUtils.getMaskedValue(kubeConfig);
+    this.kubeConfigImagePullSecretName = CommonUtils.getMaskedValue(kubeConfigImagePullSecretName);
+    this.kubeConfigPullSecret = CommonUtils.getMaskedValue(kubeConfigPullSecret);
   }
 }

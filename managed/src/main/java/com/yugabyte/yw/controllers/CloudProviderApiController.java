@@ -424,17 +424,20 @@ public class CloudProviderApiController extends AuthenticatedController {
       // as JsonNode only.
       ObjectNode detailsNode = (ObjectNode) details;
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
+        ObjectNode gcpCloudMetadata = (ObjectNode) detailsNode.get("gcpCloudMetadata");
         Boolean shouldUseHostCredentials = false;
-        if (details.has("useHostCredentials")) {
-          shouldUseHostCredentials = true;
+        if (gcpCloudMetadata.has("useHostCredentials")) {
+          shouldUseHostCredentials = gcpCloudMetadata.get("useHostCredentials").asBoolean();
         }
-        if (details.has("config_file_contents")) {
-          String configFileStringContent = details.get("config_file_contents").toString();
-          detailsNode.remove("config_file_contents");
+        if (gcpCloudMetadata.has("gceApplicationCredentials")) {
+          String configFileStringContent =
+              gcpCloudMetadata.get("gceApplicationCredentials").toString();
+          gcpCloudMetadata.remove("gceApplicationCredentials");
           if (!shouldUseHostCredentials) {
-            detailsNode.put("config_file_contents", configFileStringContent);
+            gcpCloudMetadata.put("gceApplicationCredentials", configFileStringContent);
           }
         }
+        detailsNode.set("gcpCloudMetadata", gcpCloudMetadata);
         ((ObjectNode) requestBody).set("details", detailsNode);
       }
     }
