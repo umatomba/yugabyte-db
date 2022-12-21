@@ -1,0 +1,1 @@
+ALTER TABLE provider ALTER COLUMN details TYPE bytea USING pgp_sym_encrypt(details::text, 'provider::details')

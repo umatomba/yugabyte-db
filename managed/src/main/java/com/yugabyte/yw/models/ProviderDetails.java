@@ -25,5 +25,4 @@ public class ProviderDetails extends MigratedKeyInfoFields {
   @ApiModelProperty public GCPCloudMetadata gcpCloudMetadata;
   @ApiModelProperty public KubernetesMetadata kubernetesCloudMetadata;
   @ApiModelProperty public OnPremCloudMetadata onPremCloudMetadata;
-
 }
