@@ -213,7 +213,7 @@ public class Provider extends Model {
   @Deprecated
   @JsonProperty("config")
   public void setConfig(Map<String, String> configMap) {
-    CloudMetadata.setCloudProviderMetadataFromConfig(this, configMap);
+    CloudMetadataInterface.setCloudProviderMetadataFromConfig(this, configMap);
   }
 
   @JsonIgnore
@@ -228,7 +228,7 @@ public class Provider extends Model {
 
   @JsonProperty("details")
   public ProviderDetails getMaskProviderDetails() {
-    CloudMetadata.maskProviderDetails(this);
+    CloudMetadataInterface.maskProviderDetails(this);
     return details;
   }
 
@@ -241,7 +241,8 @@ public class Provider extends Model {
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     ObjectMapper mapper = Json.mapper();
-    CloudMetadata cloudConfigMetadata = CloudMetadata.getCloudProviderMetadata(this);
+    CloudMetadataInterface cloudConfigMetadata =
+        CloudMetadataInterface.getCloudProviderMetadata(this);
     if (cloudConfigMetadata != null) {
       Map<String, String> cloudConfig =
           mapper.convertValue(cloudConfigMetadata, new TypeReference<HashMap<String, String>>() {});

@@ -26,7 +26,7 @@ import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.forms.RotateAccessKeyFormData;
 import com.yugabyte.yw.forms.ScheduledAccessKeyRotateFormData;
 import com.yugabyte.yw.models.Audit;
-import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.CloudMetadataInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
@@ -63,7 +63,7 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result list(UUID customerUUID, String name, String code) {
     CloudType providerCode = code == null ? null : CloudType.valueOf(code);
     List<Provider> providers = Provider.getAll(customerUUID, name, providerCode);
-    providers.forEach(CloudMetadata::mayBeMassageResponse);
+    providers.forEach(CloudMetadataInterface::mayBeMassageResponse);
     return PlatformResults.withData(providers);
   }
 
@@ -71,7 +71,7 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result index(UUID customerUUID, UUID providerUUID) {
     Customer.getOrBadRequest(customerUUID);
     Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
-    CloudMetadata.mayBeMassageResponse(provider);
+    CloudMetadataInterface.mayBeMassageResponse(provider);
     return PlatformResults.withData(provider);
   }
 
@@ -370,7 +370,8 @@ public class CloudProviderApiController extends AuthenticatedController {
       // as JsonNode only.
       ObjectNode detailsNode = (ObjectNode) details;
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
-        ObjectNode gcpCloudMetadata = (ObjectNode) detailsNode.get("gcpCloudMetadata");
+        ObjectNode cloudMetadata = (ObjectNode) detailsNode.get("cloudMetadata");
+        ObjectNode gcpCloudMetadata = (ObjectNode) cloudMetadata.get("gcp");
         if (gcpCloudMetadata != null) {
           Boolean shouldUseHostCredentials = false;
           if (gcpCloudMetadata.has("useHostCredentials")) {
@@ -384,7 +385,8 @@ public class CloudProviderApiController extends AuthenticatedController {
               gcpCloudMetadata.put("gceApplicationCredentials", configFileStringContent);
             }
           }
-          detailsNode.set("gcpCloudMetadata", gcpCloudMetadata);
+          cloudMetadata.set("gcp", gcpCloudMetadata);
+          detailsNode.set("cloudMetadata", cloudMetadata);
           ((ObjectNode) requestBody).set("details", detailsNode);
         }
       }

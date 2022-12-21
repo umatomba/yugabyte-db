@@ -14,15 +14,24 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import com.yugabyte.yw.models.AccessKey.MigratedKeyInfoFields;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProviderDetails extends MigratedKeyInfoFields {
 
-  @ApiModelProperty public AWSCloudMetadata awsCloudMetadata;
-  @ApiModelProperty public AzureCloudMetadata azureCloudMetadata;
-  @ApiModelProperty public GCPCloudMetadata gcpCloudMetadata;
-  @ApiModelProperty public KubernetesMetadata kubernetesCloudMetadata;
-  @ApiModelProperty public OnPremCloudMetadata onPremCloudMetadata;
+  @Data
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public static class CloudMetadata {
+    @ApiModelProperty public AWSCloudMetadata aws;
+    @ApiModelProperty public AzureCloudMetadata azu;
+    @ApiModelProperty public GCPCloudMetadata gcp;
+    @ApiModelProperty public KubernetesMetadata kubernetes;
+    @ApiModelProperty public OnPremCloudMetadata onprem;
+  }
+
+  @ApiModelProperty public CloudMetadata cloudMetadata;
 }

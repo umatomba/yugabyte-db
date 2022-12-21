@@ -15,7 +15,7 @@ import com.yugabyte.yw.forms.PlatformResults;
 import com.yugabyte.yw.forms.PlatformResults.YBPSuccess;
 import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.models.Audit;
-import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.CloudMetadataInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.ProviderDetails;
@@ -50,7 +50,7 @@ public class CloudProviderUiOnlyController extends AuthenticatedController {
    */
   @ApiOperation(value = "UI_ONLY", nickname = "createCloudProvider", hidden = true)
   public Result create(UUID customerUUID) throws IOException {
-    JsonNode reqBody = CloudMetadata.mayBeMassageRequest(request().body().asJson());
+    JsonNode reqBody = CloudMetadataInterface.mayBeMassageRequest(request().body().asJson());
     CloudProviderFormData cloudProviderFormData =
         formFactory.getFormDataOrBadRequest(reqBody, CloudProviderFormData.class);
     fieldsValidator.validateFields(
@@ -73,7 +73,7 @@ public class CloudProviderUiOnlyController extends AuthenticatedController {
             cloudProviderFormData.name,
             reqProvider,
             cloudProviderFormData.region);
-    CloudMetadata.mayBeMassageResponse(provider);
+    CloudMetadataInterface.mayBeMassageResponse(provider);
     auditService()
         .createAuditEntryWithReqBody(
             ctx(),
@@ -123,7 +123,7 @@ public class CloudProviderUiOnlyController extends AuthenticatedController {
             Objects.toString(provider.uuid, null),
             Audit.ActionType.CreateKubernetes,
             requestBody);
-    CloudMetadata.mayBeMassageResponse(provider);
+    CloudMetadataInterface.mayBeMassageResponse(provider);
     return PlatformResults.withData(provider);
   }
 

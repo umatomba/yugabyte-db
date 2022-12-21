@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Slf4j
-public class GCPCloudMetadata implements CloudMetadata {
+public class GCPCloudMetadata implements CloudMetadataInterface {
 
   @JsonIgnore
   final Map<String, String> configKeyMap =

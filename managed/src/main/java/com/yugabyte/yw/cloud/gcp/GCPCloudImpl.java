@@ -13,7 +13,7 @@ import com.google.api.services.compute.Compute;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.yugabyte.yw.cloud.CloudAPI;
-import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.CloudMetadataInterface;
 import com.yugabyte.yw.models.GCPCloudMetadata;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
@@ -64,7 +64,7 @@ public class GCPCloudImpl implements CloudAPI {
   // Basic validation to make sure that the credentials work with GCP.
   @Override
   public boolean isValidCreds(Provider provider, String region) {
-    GCPCloudMetadata gcpCloudMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+    GCPCloudMetadata gcpCloudMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
     String projectId = gcpCloudMetadata.getGceProject();
     if (StringUtils.isBlank(projectId)) {
       log.error("Project ID is not set, skipping validation");

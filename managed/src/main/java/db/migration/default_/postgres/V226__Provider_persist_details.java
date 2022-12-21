@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.yugabyte.yw.commissioner.Common.CloudType;
 import com.yugabyte.yw.controllers.handlers.CloudProviderHandler;
-import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.CloudMetadataInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 
@@ -40,7 +40,7 @@ public class V226__Provider_persist_details extends BaseJdbcMigration {
         if (provider.getCloudCode().equals(CloudType.gcp)) {
           config = V226__Provider_persist_details.massageGCPConfig(config);
         }
-        CloudMetadata.setCloudProviderMetadataFromConfig(provider, config);
+        CloudMetadataInterface.setCloudProviderMetadataFromConfig(provider, config);
         provider.save();
       }
     }

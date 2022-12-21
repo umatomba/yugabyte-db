@@ -53,7 +53,7 @@ import com.yugabyte.yw.models.AWSCloudMetadata;
 import com.yugabyte.yw.models.AccessKey;
 import com.yugabyte.yw.models.AvailabilityZone;
 import com.yugabyte.yw.models.AzureCloudMetadata;
-import com.yugabyte.yw.models.CloudMetadata;
+import com.yugabyte.yw.models.CloudMetadataInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.CustomerTask;
 import com.yugabyte.yw.models.FileData;
@@ -360,7 +360,7 @@ public class CloudProviderHandler {
     if (config == null) {
       return false;
     }
-    KubernetesMetadata k8sMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+    KubernetesMetadata k8sMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
 
     String path = provider.uuid.toString();
     if (region != null) {
@@ -412,7 +412,7 @@ public class CloudProviderHandler {
   }
 
   private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
-    GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+    GCPCloudMetadata gcpMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
     JsonNode gcpCredentials = gcpMetadata.getCredentialJSON();
     String gcpCredentialsFile =
         accessManager.createGCPCredentialsFile(provider.uuid, gcpCredentials);
@@ -786,13 +786,13 @@ public class CloudProviderHandler {
     }
     existingConfig = new HashMap<>(existingConfig);
     existingConfig.putAll(providerConfig);
-    CloudMetadata.setCloudProviderMetadataFromConfig(toProvider, existingConfig);
+    CloudMetadataInterface.setCloudProviderMetadataFromConfig(toProvider, existingConfig);
   }
 
   private void maybeUpdateVPC(Provider provider) {
     switch (provider.getCloudCode()) {
       case gcp:
-        GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+        GCPCloudMetadata gcpMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
         if (gcpMetadata == null) {
           return;
         }
@@ -894,11 +894,11 @@ public class CloudProviderHandler {
     }
 
     if (provider.getCloudCode().equals(CloudType.aws)) {
-      AWSCloudMetadata awsMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+      AWSCloudMetadata awsMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
       awsMetadata.setAwsHostedZoneId(hostedZoneId);
       awsMetadata.setAwsHostedZoneName(hostedZoneData.asText());
     } else if (provider.getCloudCode().equals(CloudType.azu)) {
-      AzureCloudMetadata azuMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+      AzureCloudMetadata azuMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
       azuMetadata.setAzuHostedZoneId(hostedZoneId);
       azuMetadata.setAzuHostedZoneName(hostedZoneData.asText());
     }
