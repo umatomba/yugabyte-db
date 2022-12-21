@@ -190,6 +190,7 @@ public class Provider extends Model {
   @ApiModelProperty public String destVpcId = null;
 
   // Hosted Zone for the deployment
+  @Deprecated
   @Transient
   @ApiModelProperty(TRANSIENT_PROPERTY_IN_MUTATE_API_REQUEST)
   public String hostedZoneId = null;
@@ -444,13 +445,18 @@ public class Provider extends Model {
 
   @ApiModelProperty(required = false)
   public String getHostedZoneId() {
-    return getUnmaskedConfig().getOrDefault("awsHostedZoneId", null);
+    if (this.getCloudCode().equals(CloudType.aws)) {
+      return getUnmaskedConfig().getOrDefault("awsHostedZoneId", null);
+    }
+    return getUnmaskedConfig().getOrDefault("azuHostedZoneId", null);
   }
 
-  // Needed now?
   @ApiModelProperty(required = false)
   public String getHostedZoneName() {
-    return getUnmaskedConfig().getOrDefault("awsHostedZoneName", null);
+    if (this.getCloudCode().equals(CloudType.aws)) {
+      return getUnmaskedConfig().getOrDefault("awsHostedZoneName", null);
+    }
+    return getUnmaskedConfig().getOrDefault("azuHostedZoneName", null);
   }
 
   /**
@@ -461,14 +467,6 @@ public class Provider extends Model {
    */
   public static List<Provider> getByCode(String code) {
     return find.query().where().eq("code", code).findList();
-  }
-
-  // Update host zone.
-  public void updateHostedZone(String hostedZoneId, String hostedZoneName) {
-    Map<String, String> currentProviderConfig = getUnmaskedConfig();
-    currentProviderConfig.put("HOSTED_ZONE_ID", hostedZoneId);
-    currentProviderConfig.put("HOSTED_ZONE_NAME", hostedZoneName);
-    this.setConfig(currentProviderConfig);
   }
 
   // Used for GCP providers to pass down region information. Currently maps regions to

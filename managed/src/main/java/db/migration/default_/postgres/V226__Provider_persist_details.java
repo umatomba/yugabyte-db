@@ -37,7 +37,7 @@ public class V226__Provider_persist_details extends BaseJdbcMigration {
         }
 
         // Massage the config to be stored in newer format.
-        if (provider.code.equals(CloudType.valueOf("gcp").toString())) {
+        if (provider.getCloudCode().equals(CloudType.gcp)) {
           config = V226__Provider_persist_details.massageGCPConfig(config);
         }
         CloudMetadata.setCloudProviderMetadataFromConfig(provider, config);

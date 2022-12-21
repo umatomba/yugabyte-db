@@ -26,6 +26,7 @@ public class AzureCloudMetadata implements CloudMetadata {
           put("azuClientSecret", "AZURE_CLIENT_SECRET");
           put("azuSubscriptionId", "AZURE_SUBSCRIPTION_ID");
           put("azuRG", "AZURE_RG");
+          put("azuHostedZoneId", "HOSTED_ZONE_ID");
         }
       };
 
@@ -37,7 +38,6 @@ public class AzureCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String azuClientId;
 
-  // ToDo: Masking
   @JsonAlias("AZURE_CLIENT_SECRET")
   @ApiModelProperty
   public String azuClientSecret;
@@ -50,6 +50,14 @@ public class AzureCloudMetadata implements CloudMetadata {
   @ApiModelProperty
   public String azuRG;
 
+  @JsonAlias("HOSTED_ZONE_ID")
+  @ApiModelProperty
+  public String azuHostedZoneId;
+
+  @JsonAlias("HOSTED_ZONE_NAME")
+  @ApiModelProperty(hidden = true)
+  public String azuHostedZoneName;
+
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
@@ -60,6 +68,9 @@ public class AzureCloudMetadata implements CloudMetadata {
       envVars.put("AZURE_CLIENT_SECRET", azuClientSecret);
       envVars.put("AZURE_SUBSCRIPTION_ID", azuSubscriptionId);
       envVars.put("AZURE_RG", azuRG);
+      if (azuHostedZoneId != null) {
+        envVars.put("HOSTED_ZONE_ID", azuHostedZoneId);
+      }
     }
 
     return envVars;

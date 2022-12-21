@@ -52,6 +52,7 @@ import com.yugabyte.yw.forms.KubernetesProviderFormData;
 import com.yugabyte.yw.models.AWSCloudMetadata;
 import com.yugabyte.yw.models.AccessKey;
 import com.yugabyte.yw.models.AvailabilityZone;
+import com.yugabyte.yw.models.AzureCloudMetadata;
 import com.yugabyte.yw.models.CloudMetadata;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.CustomerTask;
@@ -851,12 +852,17 @@ public class CloudProviderHandler {
           BAD_REQUEST, String.format("Invalid %s Credentials.", provider.code.toUpperCase()));
     }
     switch (provider.getCloudCode()) {
-      case aws: // Fall through to the common code.
+      case aws:
+      case azu: // Fall through to the common code.
         // TODO: Add this validation. But there is a bad test.
         //  if (anyProviderRegion == null || anyProviderRegion.isEmpty()) {
         //    throw new YWServiceException(BAD_REQUEST, "Must have at least one region");
         //  }
-        String hostedZoneId = providerConfig.get("awsHostedZoneId");
+        String hostedZoneKey = "awsHostedZoneId";
+        if (provider.getCloudCode().equals(CloudType.azu)) {
+          hostedZoneKey = "azuHostedZoneId";
+        }
+        String hostedZoneId = providerConfig.get(hostedZoneKey);
         if (hostedZoneId != null && hostedZoneId.length() != 0) {
           validateAndUpdateHostedZone(provider, hostedZoneId);
         }
@@ -875,7 +881,6 @@ public class CloudProviderHandler {
       throw new PlatformServiceException(
           INTERNAL_SERVER_ERROR, "Invalid devops API response: " + response.message);
     }
-    AWSCloudMetadata awsMetadata = CloudMetadata.getCloudProviderMetadata(provider);
 
     // The result returned from devops should be of the form
     // {
@@ -888,8 +893,15 @@ public class CloudProviderHandler {
           INTERNAL_SERVER_ERROR, "Invalid devops API response: " + response.message);
     }
 
-    awsMetadata.setAwsHostedZoneId(hostedZoneId);
-    awsMetadata.setAwsHostedZoneName(hostedZoneData.asText());
+    if (provider.getCloudCode().equals(CloudType.aws)) {
+      AWSCloudMetadata awsMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+      awsMetadata.setAwsHostedZoneId(hostedZoneId);
+      awsMetadata.setAwsHostedZoneName(hostedZoneData.asText());
+    } else if (provider.getCloudCode().equals(CloudType.azu)) {
+      AzureCloudMetadata azuMetadata = CloudMetadata.getCloudProviderMetadata(provider);
+      azuMetadata.setAzuHostedZoneId(hostedZoneId);
+      azuMetadata.setAzuHostedZoneName(hostedZoneData.asText());
+    }
   }
 
   public void refreshPricing(UUID customerUUID, Provider provider) {
