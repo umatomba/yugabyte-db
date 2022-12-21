@@ -371,6 +371,9 @@ public class CloudProviderApiController extends AuthenticatedController {
       ObjectNode detailsNode = (ObjectNode) details;
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
         ObjectNode cloudMetadata = (ObjectNode) detailsNode.get("cloudMetadata");
+        if (cloudMetadata == null || cloudMetadata.isEmpty()) {
+          return requestBody;
+        }
         ObjectNode gcpCloudMetadata = (ObjectNode) cloudMetadata.get("gcp");
         if (gcpCloudMetadata != null) {
           Boolean shouldUseHostCredentials = false;

@@ -301,7 +301,8 @@ public class CloudProviderHandler {
     }
 
     Map<String, String> config = reqProvider.getUnmaskedConfig();
-    Provider provider = Provider.create(customer.uuid, providerCode, reqProvider.name, config);
+    Provider provider =
+        Provider.create(customer.uuid, providerCode, reqProvider.name, reqProvider.details);
 
     boolean isConfigInProvider = updateKubeConfig(provider, config, false);
     List<Region> regionList = reqProvider.regions;

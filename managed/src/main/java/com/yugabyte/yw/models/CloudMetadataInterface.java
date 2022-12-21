@@ -35,39 +35,37 @@ public interface CloudMetadataInterface {
     }
     ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
     if (cloudMetadata == null) {
-      return null;
+      cloudMetadata = new ProviderDetails.CloudMetadata();
     }
-    System.out.println("Testing in the cloud interface");
-    System.out.println(cloudMetadata.toString());
     String providerType = provider.code;
     CloudType cloudType = CloudType.valueOf(providerType);
     switch (cloudType) {
       case aws:
-        AWSCloudMetadata awsMetadata = cloudMetadata.aws;
+        AWSCloudMetadata awsMetadata = cloudMetadata.getAws();
         if (awsMetadata != null && maskSensitiveData) {
           awsMetadata.maskSensitiveData();
         }
         return (T) awsMetadata;
       case gcp:
-        GCPCloudMetadata gcpMetadata = cloudMetadata.gcp;
+        GCPCloudMetadata gcpMetadata = cloudMetadata.getGcp();
         if (gcpMetadata != null && maskSensitiveData) {
           gcpMetadata.maskSensitiveData();
         }
         return (T) gcpMetadata;
       case azu:
-        AzureCloudMetadata azuMetadata = cloudMetadata.azu;
+        AzureCloudMetadata azuMetadata = cloudMetadata.getAzu();
         if (azuMetadata != null && maskSensitiveData) {
           azuMetadata.maskSensitiveData();
         }
         return (T) azuMetadata;
       case kubernetes:
-        KubernetesMetadata kubernetesMetadata = cloudMetadata.kubernetes;
+        KubernetesMetadata kubernetesMetadata = cloudMetadata.getKubernetes();
         if (kubernetesMetadata != null && maskSensitiveData) {
           kubernetesMetadata.maskSensitiveData();
         }
         return (T) kubernetesMetadata;
       case onprem:
-        OnPremCloudMetadata onPremMetadata = cloudMetadata.onprem;
+        OnPremCloudMetadata onPremMetadata = cloudMetadata.getOnprem();
         if (onPremMetadata != null && maskSensitiveData) {
           onPremMetadata.maskSensitiveData();
         }
@@ -90,6 +88,7 @@ public interface CloudMetadataInterface {
     ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
     if (cloudMetadata == null) {
       cloudMetadata = new ProviderDetails.CloudMetadata();
+      providerDetails.setCloudMetadata(cloudMetadata);
     }
     CloudType cloudType = CloudType.valueOf(provider.code);
     switch (cloudType) {
@@ -161,28 +160,36 @@ public interface CloudMetadataInterface {
     Map<String, String> config = p.getUnmaskedConfig();
     ProviderDetails providerDetails = p.getUnmaskedProviderDetails();
     ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
+    if (cloudMetadata == null) {
+      return;
+    }
     CloudType cloudType = CloudType.valueOf(p.code);
+    CloudMetadataInterface cloudMetadataInterface = null;
     switch (cloudType) {
       case aws:
-        config = cloudMetadata.getAws().getConfigMapForUIOnlyAPIs(config);
+        cloudMetadataInterface = cloudMetadata.getAws();
         break;
       case gcp:
-        config = cloudMetadata.getGcp().getConfigMapForUIOnlyAPIs(config);
+        cloudMetadataInterface = cloudMetadata.getGcp();
         break;
       case azu:
-        config = cloudMetadata.getAzu().getConfigMapForUIOnlyAPIs(config);
+        cloudMetadataInterface = cloudMetadata.getAzu();
         break;
       case kubernetes:
-        config = cloudMetadata.getKubernetes().getConfigMapForUIOnlyAPIs(config);
+        cloudMetadataInterface = cloudMetadata.getKubernetes();
         break;
       case onprem:
-        config = cloudMetadata.getOnprem().getConfigMapForUIOnlyAPIs(config);
+        cloudMetadataInterface = cloudMetadata.getOnprem();
         break;
       case local:
         // Import Universe case
       default:
         break;
     }
+    if (cloudMetadataInterface == null) {
+      return;
+    }
+    config = cloudMetadataInterface.getConfigMapForUIOnlyAPIs(config);
     p.config = maskConfigNew(config);
   }
 }
