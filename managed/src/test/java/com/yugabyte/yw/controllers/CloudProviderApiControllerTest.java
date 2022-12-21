@@ -688,12 +688,12 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
   }
 
   // to be fixed.
-  // @Test
+  @Test
   public void testPatchProviderSuccess() throws Exception {
     when(mockAccessManager.createGCPCredentialsFile(any(), any())).thenReturn("/test-path");
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
-    reqConfig.put("gce_project", "test-project");
+    reqConfig.put("gceProject", "test-project");
     CloudMetadata.setCloudProviderMetadataFromConfig(provider, reqConfig);
     provider.save();
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
@@ -702,19 +702,19 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
     ObjectNode details = Json.newObject();
     ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("gce_project", "test-project-updated");
+    cloudMetadataJson.put("gceProject", "test-project-updated");
     details.set("gcpCloudMetadata", cloudMetadataJson);
     providerJson.set("details", details);
+    providerJson.remove("config");
     Result result = patchProvider(providerJson, provider.uuid);
     assertOk(result);
-    // ToDo: Once Edit Provider is enabled.
-    // provider = Provider.get(customer.uuid, provider.uuid);
-    // Map<String, String> expectedConfig =
-    //     ImmutableMap.of(
-    //         "gce_project", "test-project-updated",
-    //         "GOOGLE_APPLICATION_CREDENTIALS", "/test-path");
-    // Map<String, String> config = provider.getUnmaskedConfig();
-    // assertEquals(expectedConfig, config);
+    provider = Provider.get(customer.uuid, provider.uuid);
+    Map<String, String> expectedConfig =
+        ImmutableMap.of(
+            "gceProject", "test-project-updated",
+            "gceApplicationCredentialsPath", "/test-path");
+    Map<String, String> config = provider.getUnmaskedConfig();
+    assertEquals(expectedConfig, config);
   }
 
   @Test
@@ -728,12 +728,13 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
 
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
     Result providerRes = getProvider(provider.uuid);
-    ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
-    ObjectNode details = Json.newObject();
-    ObjectNode cloudMetadataJson = Json.newObject();
+    JsonNode providerJson = Json.parse(contentAsString(providerRes));
+    JsonNode details = providerJson.get("details");
+    ObjectNode cloudMetadataJson = (ObjectNode) details.get("gcpCloudMetadata");
     cloudMetadataJson.put("gceProject", "test-project-updated");
-    details.set("gcpCloudMetadata", cloudMetadataJson);
-    providerJson.set("details", details);
+    ((ObjectNode) details).set("gcpCloudMetadata", cloudMetadataJson);
+    ((ObjectNode) providerJson).set("details", details);
+    ((ObjectNode) providerJson).remove("config");
 
     Result result = patchProviderWithEH(providerJson, provider.uuid);
     assertOk(result);

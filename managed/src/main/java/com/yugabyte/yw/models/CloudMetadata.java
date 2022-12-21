@@ -38,31 +38,31 @@ public interface CloudMetadata {
     switch (cloudType) {
       case aws:
         AWSCloudMetadata awsMetadata = providerDetails.awsCloudMetadata;
-        if (maskSensitiveData) {
+        if (awsMetadata != null && maskSensitiveData) {
           awsMetadata.maskSensitiveData();
         }
         return (T) awsMetadata;
       case gcp:
         GCPCloudMetadata gcpMetadata = providerDetails.gcpCloudMetadata;
-        if (maskSensitiveData) {
+        if (gcpMetadata != null && maskSensitiveData) {
           gcpMetadata.maskSensitiveData();
         }
         return (T) gcpMetadata;
       case azu:
         AzureCloudMetadata azuMetadata = providerDetails.azureCloudMetadata;
-        if (maskSensitiveData) {
+        if (azuMetadata != null && maskSensitiveData) {
           azuMetadata.maskSensitiveData();
         }
         return (T) azuMetadata;
       case kubernetes:
         KubernetesMetadata kubernetesMetadata = providerDetails.kubernetesCloudMetadata;
-        if (maskSensitiveData) {
+        if (kubernetesMetadata != null && maskSensitiveData) {
           kubernetesMetadata.maskSensitiveData();
         }
         return (T) kubernetesMetadata;
       case onprem:
         OnPremCloudMetadata onPremMetadata = providerDetails.onPremCloudMetadata;
-        if (maskSensitiveData) {
+        if (onPremMetadata != null && maskSensitiveData) {
           onPremMetadata.maskSensitiveData();
         }
         return (T) onPremMetadata;

@@ -127,8 +127,8 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result edit(UUID customerUUID, UUID providerUUID) {
     Customer customer = Customer.getOrBadRequest(customerUUID);
     Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
-    Provider editProviderReq =
-        formFactory.getFormDataOrBadRequest(request().body().asJson(), Provider.class);
+    JsonNode requestBody = mayBeMassageRequest(request().body().asJson());
+    Provider editProviderReq = formFactory.getFormDataOrBadRequest(requestBody, Provider.class);
     UUID taskUUID =
         cloudProviderHandler.editProvider(
             customer, provider, editProviderReq, getFirstRegionCode(provider));
@@ -153,8 +153,8 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result patch(UUID customerUUID, UUID providerUUID) {
     Customer customer = Customer.getOrBadRequest(customerUUID);
     Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
-    Provider editProviderReq =
-        formFactory.getFormDataOrBadRequest(request().body().asJson(), Provider.class);
+    JsonNode requestBody = mayBeMassageRequest(request().body().asJson());
+    Provider editProviderReq = formFactory.getFormDataOrBadRequest(requestBody, Provider.class);
     cloudProviderHandler.mergeProviderConfig(provider, editProviderReq);
     cloudProviderHandler.editProvider(
         customer, provider, editProviderReq, getFirstRegionCode(provider));
@@ -425,20 +425,22 @@ public class CloudProviderApiController extends AuthenticatedController {
       ObjectNode detailsNode = (ObjectNode) details;
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
         ObjectNode gcpCloudMetadata = (ObjectNode) detailsNode.get("gcpCloudMetadata");
-        Boolean shouldUseHostCredentials = false;
-        if (gcpCloudMetadata.has("useHostCredentials")) {
-          shouldUseHostCredentials = gcpCloudMetadata.get("useHostCredentials").asBoolean();
-        }
-        if (gcpCloudMetadata.has("gceApplicationCredentials")) {
-          String configFileStringContent =
-              gcpCloudMetadata.get("gceApplicationCredentials").toString();
-          gcpCloudMetadata.remove("gceApplicationCredentials");
-          if (!shouldUseHostCredentials) {
-            gcpCloudMetadata.put("gceApplicationCredentials", configFileStringContent);
+        if (gcpCloudMetadata != null) {
+          Boolean shouldUseHostCredentials = false;
+          if (gcpCloudMetadata.has("useHostCredentials")) {
+            shouldUseHostCredentials = gcpCloudMetadata.get("useHostCredentials").asBoolean();
           }
+          if (gcpCloudMetadata.has("gceApplicationCredentials")) {
+            String configFileStringContent =
+                gcpCloudMetadata.get("gceApplicationCredentials").toString();
+            gcpCloudMetadata.remove("gceApplicationCredentials");
+            if (!shouldUseHostCredentials) {
+              gcpCloudMetadata.put("gceApplicationCredentials", configFileStringContent);
+            }
+          }
+          detailsNode.set("gcpCloudMetadata", gcpCloudMetadata);
+          ((ObjectNode) requestBody).set("details", detailsNode);
         }
-        detailsNode.set("gcpCloudMetadata", gcpCloudMetadata);
-        ((ObjectNode) requestBody).set("details", detailsNode);
       }
     }
 

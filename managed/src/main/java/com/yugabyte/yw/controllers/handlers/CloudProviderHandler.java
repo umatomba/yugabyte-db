@@ -383,13 +383,20 @@ public class CloudProviderHandler {
   }
 
   private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
-    // ToDo: Fix the edit provider part.
     GCPCloudMetadata gcpMetadata = CloudMetadata.getCloudProviderMetadata(provider);
     JsonNode gcpCredentials = gcpMetadata.getCredentialJSON();
     String gcpCredentialsFile =
         accessManager.createGCPCredentialsFile(provider.uuid, gcpCredentials);
     if (gcpCredentialsFile != null) {
       gcpMetadata.setGceApplicationCredentialsPath(gcpCredentialsFile);
+    }
+    if (!config.isEmpty()) {
+      if (config.containsKey("gceProject")) {
+        gcpMetadata.setGceProject(config.get("gceProject"));
+      }
+      if (config.containsKey("ybFirewallTags")) {
+        gcpMetadata.setYbFirewallTags(config.get("ybFirewallTags"));
+      }
     }
   }
 

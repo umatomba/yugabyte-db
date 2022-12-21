@@ -40,7 +40,8 @@ public class GCPCloudMetadata implements CloudMetadata {
       };
 
   @JsonIgnore
-  final List<String> toRemoveKeyFromConfig = ImmutableList.of("gceApplicationCredentials");
+  final List<String> toRemoveKeyFromConfig =
+      ImmutableList.of("gceApplicationCredentials", "useHostCredentials");
 
   @JsonIgnore
   final Map<String, String> toAddKeysInConfig =
@@ -92,6 +93,9 @@ public class GCPCloudMetadata implements CloudMetadata {
 
   @JsonIgnore
   public JsonNode getCredentialJSON() {
+    if (gceApplicationCredentials == null) {
+      return null;
+    }
     ObjectMapper mapper = new ObjectMapper();
     JsonNode gcpCredentials = null;
     try {
