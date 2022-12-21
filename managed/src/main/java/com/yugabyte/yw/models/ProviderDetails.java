@@ -10,28 +10,15 @@
 
 package com.yugabyte.yw.models;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import io.swagger.annotations.ApiModelProperty.AccessMode;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import com.yugabyte.yw.models.AccessKey.MigratedKeyInfoFields;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProviderDetails {
-  // these are the fields in access key info that actually belong in provider
-  @ApiModelProperty public String sshUser;
-  @ApiModelProperty public Integer sshPort = 22;
-  @ApiModelProperty public boolean airGapInstall = false;
-  @ApiModelProperty public List<String> ntpServers = Collections.emptyList();
-  @ApiModelProperty public boolean setUpChrony = false;
-  // Indicates whether the provider was created before or after PLAT-3009
-  // True if it was created after, else it was created before.
-  // Dictates whether or not to show the set up NTP option in the provider UI
-  @ApiModelProperty public boolean showSetUpChrony = false;
+public class ProviderDetails extends MigratedKeyInfoFields {
 
   @ApiModelProperty public AWSCloudMetadata awsCloudMetadata;
   @ApiModelProperty public AzureCloudMetadata azureCloudMetadata;
@@ -39,22 +26,4 @@ public class ProviderDetails {
   @ApiModelProperty public KubernetesMetadata kubernetesCloudMetadata;
   @ApiModelProperty public OnPremCloudMetadata onPremCloudMetadata;
 
-  /// These need database migration before we make these read write
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public boolean passwordlessSudoAccess = true;
-
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public String provisionInstanceScript = "";
-
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public boolean installNodeExporter = true;
-
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public Integer nodeExporterPort = 9300;
-
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public String nodeExporterUser = "prometheus";
-
-  @ApiModelProperty(accessMode = AccessMode.READ_ONLY)
-  public boolean skipProvisioning = false;
 }

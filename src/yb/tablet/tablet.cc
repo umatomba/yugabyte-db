@@ -375,7 +375,16 @@ class Tablet::RegularRocksDbListener : public rocksdb::EventListener {
       }
       ERROR_NOT_OK(metadata.Flush(), log_prefix_);
     }
+
+    // Collect min schema version from all DB entries. I.e. stored in memory and flushed to disk.
     std::unordered_map<Uuid, SchemaVersion, UuidHash> table_id_to_min_schema_version;
+    {
+      auto smallest = db->CalcMemTableFrontier(rocksdb::UpdateUserValueType::kSmallest);
+      if (smallest) {
+        down_cast<docdb::ConsensusFrontier&>(*smallest).MakeExternalSchemaVersionsAtMost(
+            &table_id_to_min_schema_version);
+      }
+    }
     for (const auto& file : db->GetLiveFilesMetaData()) {
       if (!file.smallest.user_frontier) {
         continue;
@@ -1404,6 +1413,14 @@ void Tablet::WriteToRocksDB(
   rocksdb::WriteOptions write_options;
   InitRocksDBWriteOptions(&write_options);
 
+  std::optional<docdb::DocWriteBatchFormatter> formatter;
+  if (FLAGS_TEST_docdb_log_write_batches) {
+    formatter.emplace(
+        storage_db_type, BinaryOutputFormat::kEscapedAndHex, WriteBatchOutputFormat::kArrow,
+        "  " + LogPrefix(storage_db_type));
+    write_batch->SetHandlerForLogging(&*formatter);
+  }
+
   auto rocksdb_write_status = dest_db->Write(write_options, write_batch);
   if (!rocksdb_write_status.ok()) {
     LOG_WITH_PREFIX(FATAL) << "Failed to write a batch with " << write_batch->Count()
@@ -1412,13 +1429,9 @@ void Tablet::WriteToRocksDB(
 
   if (FLAGS_TEST_docdb_log_write_batches) {
     LOG_WITH_PREFIX(INFO)
-        << "Wrote " << write_batch->Count() << " key/value pairs to " << storage_db_type
-        << " RocksDB:\n" << docdb::WriteBatchToString(
-            *write_batch,
-            storage_db_type,
-            BinaryOutputFormat::kEscapedAndHex,
-            WriteBatchOutputFormat::kArrow,
-            "  " + LogPrefix(storage_db_type));
+        << "Wrote " << formatter->Count()
+        << " key/value pairs to " << storage_db_type
+        << " RocksDB:\n" << formatter->str();
   }
 }
 
