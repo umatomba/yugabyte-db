@@ -1,7 +1,7 @@
 {
   "consumes" : [ "application/json" ],
   "definitions" : {
-    "AWSCloudMetadata" : {
+    "AWSCloudInfo" : {
       "properties" : {
         "awsAccessKeyID" : {
           "type" : "string"
@@ -1211,7 +1211,7 @@
       "required" : [ "availabilityZones" ],
       "type" : "object"
     },
-    "AzureCloudMetadata" : {
+    "AzureCloudInfo" : {
       "properties" : {
         "azuClientId" : {
           "type" : "string"
@@ -2639,22 +2639,22 @@
       "required" : [ "certExpiry", "certStart", "username" ],
       "type" : "object"
     },
-    "CloudMetadata" : {
+    "CloudInfo" : {
       "properties" : {
         "aws" : {
-          "$ref" : "#/definitions/AWSCloudMetadata"
+          "$ref" : "#/definitions/AWSCloudInfo"
         },
         "azu" : {
-          "$ref" : "#/definitions/AzureCloudMetadata"
+          "$ref" : "#/definitions/AzureCloudInfo"
         },
         "gcp" : {
-          "$ref" : "#/definitions/GCPCloudMetadata"
+          "$ref" : "#/definitions/GCPCloudInfo"
         },
         "kubernetes" : {
-          "$ref" : "#/definitions/KubernetesMetadata"
+          "$ref" : "#/definitions/KubernetesInfo"
         },
         "onprem" : {
-          "$ref" : "#/definitions/OnPremCloudMetadata"
+          "$ref" : "#/definitions/OnPremCloudInfo"
         }
       },
       "type" : "object"
@@ -3716,7 +3716,7 @@
       },
       "type" : "object"
     },
-    "GCPCloudMetadata" : {
+    "GCPCloudInfo" : {
       "properties" : {
         "customGceNetwork" : {
           "type" : "string"
@@ -4318,7 +4318,7 @@
       "required" : [ "allTables", "backupSizeInBytes", "defaultLocation", "keyspace", "perRegionLocations", "tableUUIDList", "tablesList" ],
       "type" : "object"
     },
-    "KubernetesMetadata" : {
+    "KubernetesInfo" : {
       "properties" : {
         "KUBECONFIG" : {
           "type" : "string"
@@ -5678,7 +5678,7 @@
       "required" : [ "node", "numDelete", "numInsert", "numSelect", "numUpdate" ],
       "type" : "object"
     },
-    "OnPremCloudMetadata" : {
+    "OnPremCloudInfo" : {
       "properties" : {
         "ybHomeDir" : {
           "type" : "string"
@@ -6185,8 +6185,8 @@
         "airGapInstall" : {
           "type" : "boolean"
         },
-        "cloudMetadata" : {
-          "$ref" : "#/definitions/CloudMetadata"
+        "cloudInfo" : {
+          "$ref" : "#/definitions/CloudInfo"
         },
         "installNodeExporter" : {
           "type" : "boolean"

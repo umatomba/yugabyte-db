@@ -133,8 +133,7 @@ public abstract class DevopsBase {
       commandList.add("--region");
       commandList.add(region.code);
       try {
-        CloudInfoInterface cloudInfo =
-            CloudInfoInterface.getCloudProviderMetadata(region.provider);
+        CloudInfoInterface cloudInfo = CloudInfoInterface.getCloudProviderMetadata(region.provider);
         extraVars.putAll(cloudInfo.getEnvVars());
       } catch (Exception e) {
         log.error("Failed to retrieve env variables for the provider", e);
@@ -143,8 +142,7 @@ public abstract class DevopsBase {
       provider = Provider.get(providerUUID);
       commandList.add(provider.code);
       try {
-        CloudInfoInterface cloudInfo =
-            CloudInfoInterface.getCloudProviderMetadata(provider);
+        CloudInfoInterface cloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
         extraVars.putAll(cloudInfo.getEnvVars());
       } catch (Exception e) {
         log.error("Failed to retrieve env variables for the provider", e);

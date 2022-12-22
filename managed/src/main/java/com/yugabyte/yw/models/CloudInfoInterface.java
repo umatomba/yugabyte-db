@@ -105,13 +105,11 @@ public interface CloudInfoInterface {
         cloudInfo.setAzu(azuCloudInfo);
         break;
       case kubernetes:
-        KubernetesInfo kubernetesInfo =
-            mapper.convertValue(config, KubernetesInfo.class);
+        KubernetesInfo kubernetesInfo = mapper.convertValue(config, KubernetesInfo.class);
         cloudInfo.setKubernetes(kubernetesInfo);
         break;
       case onprem:
-        OnPremCloudInfo onPremCloudInfo =
-            mapper.convertValue(config, OnPremCloudInfo.class);
+        OnPremCloudInfo onPremCloudInfo = mapper.convertValue(config, OnPremCloudInfo.class);
         cloudInfo.setOnprem(onPremCloudInfo);
         break;
       case local:
@@ -132,13 +130,18 @@ public interface CloudInfoInterface {
         ObjectNode details = mapper.createObjectNode();
         ObjectNode cloudInfo = mapper.createObjectNode();
         ObjectNode gcpCloudInfo = mapper.createObjectNode();
+        JsonNode configFileContent = config.get("config_file_contents");
 
         Boolean shouldUseHostCredentials =
             config.has("use_host_credentials") && config.get("use_host_credentials").asBoolean();
-        gcpCloudInfo.set("host_project_id", config.get("host_project_id"));
-        if (!shouldUseHostCredentials && config.has("config_file_contents")) {
-          gcpCloudInfo.put(
-              "config_file_contents", config.get("config_file_contents").toString());
+
+        if (config.has("host_project_id")) {
+          gcpCloudInfo.set("host_project_id", config.get("host_project_id"));
+        } else if (configFileContent != null && !configFileContent.isNull()) {
+          gcpCloudInfo.set("host_project_id", ((ObjectNode) configFileContent).get("project_id"));
+        }
+        if (!shouldUseHostCredentials && configFileContent != null) {
+          gcpCloudInfo.put("config_file_contents", configFileContent.toString());
         }
         if (config.has("use_host_vpc")) {
           gcpCloudInfo.set("use_host_vpc", config.get("use_host_vpc"));

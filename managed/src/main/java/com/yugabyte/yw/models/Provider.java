@@ -241,8 +241,7 @@ public class Provider extends Model {
   @JsonIgnore
   public Map<String, String> getUnmaskedConfig() {
     ObjectMapper mapper = Json.mapper();
-    CloudInfoInterface cloudConfigMetadata =
-        CloudInfoInterface.getCloudProviderMetadata(this);
+    CloudInfoInterface cloudConfigMetadata = CloudInfoInterface.getCloudProviderMetadata(this);
     if (cloudConfigMetadata != null) {
       Map<String, String> cloudConfig =
           mapper.convertValue(cloudConfigMetadata, new TypeReference<HashMap<String, String>>() {});
