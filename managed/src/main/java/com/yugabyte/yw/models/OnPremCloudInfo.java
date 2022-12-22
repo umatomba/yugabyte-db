@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OnPremCloudMetadata implements CloudMetadataInterface {
+public class OnPremCloudInfo implements CloudInfoInterface {
 
   @JsonIgnore
   final Map<String, String> configKeyMap =

@@ -49,17 +49,17 @@ import com.yugabyte.yw.common.ShellResponse;
 import com.yugabyte.yw.common.config.RuntimeConfigFactory;
 import com.yugabyte.yw.forms.EditAccessKeyRotationScheduleParams;
 import com.yugabyte.yw.forms.KubernetesProviderFormData;
-import com.yugabyte.yw.models.AWSCloudMetadata;
+import com.yugabyte.yw.models.AWSCloudInfo;
 import com.yugabyte.yw.models.AccessKey;
 import com.yugabyte.yw.models.AvailabilityZone;
-import com.yugabyte.yw.models.AzureCloudMetadata;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.AzureCloudInfo;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.CustomerTask;
 import com.yugabyte.yw.models.FileData;
-import com.yugabyte.yw.models.GCPCloudMetadata;
+import com.yugabyte.yw.models.GCPCloudInfo;
 import com.yugabyte.yw.models.InstanceType;
-import com.yugabyte.yw.models.KubernetesMetadata;
+import com.yugabyte.yw.models.KubernetesInfo;
 import com.yugabyte.yw.models.NodeInstance;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
@@ -361,7 +361,7 @@ public class CloudProviderHandler {
     if (config == null) {
       return false;
     }
-    KubernetesMetadata k8sMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
+    KubernetesInfo k8sMetadata = CloudInfoInterface.getCloudProviderMetadata(provider);
 
     String path = provider.uuid.toString();
     if (region != null) {
@@ -413,19 +413,19 @@ public class CloudProviderHandler {
   }
 
   private void updateGCPProviderConfig(Provider provider, Map<String, String> config) {
-    GCPCloudMetadata gcpMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
-    JsonNode gcpCredentials = gcpMetadata.getCredentialJSON();
+    GCPCloudInfo gcpCloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
+    JsonNode gcpCredentials = gcpCloudInfo.getCredentialJSON();
     String gcpCredentialsFile =
         accessManager.createGCPCredentialsFile(provider.uuid, gcpCredentials);
     if (gcpCredentialsFile != null) {
-      gcpMetadata.setGceApplicationCredentialsPath(gcpCredentialsFile);
+      gcpCloudInfo.setGceApplicationCredentialsPath(gcpCredentialsFile);
     }
     if (!config.isEmpty()) {
       if (config.containsKey("gceProject")) {
-        gcpMetadata.setGceProject(config.get("gceProject"));
+        gcpCloudInfo.setGceProject(config.get("gceProject"));
       }
       if (config.containsKey("ybFirewallTags")) {
-        gcpMetadata.setYbFirewallTags(config.get("ybFirewallTags"));
+        gcpCloudInfo.setYbFirewallTags(config.get("ybFirewallTags"));
       }
     }
   }
@@ -787,26 +787,32 @@ public class CloudProviderHandler {
     }
     existingConfig = new HashMap<>(existingConfig);
     existingConfig.putAll(providerConfig);
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(toProvider, existingConfig);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(toProvider, existingConfig);
   }
 
   private void maybeUpdateVPC(Provider provider) {
     switch (provider.getCloudCode()) {
       case gcp:
-        GCPCloudMetadata gcpMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
-        if (gcpMetadata == null) {
+        GCPCloudInfo gcpCloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
+        if (gcpCloudInfo == null) {
           return;
         }
 
-        if (gcpMetadata.getUseHostVPC() != null
-            && gcpMetadata.getUseHostVPC().equalsIgnoreCase("true")) {
+        if (gcpCloudInfo.getUseHostVPC() != null
+            && gcpCloudInfo.getUseHostVPC().equalsIgnoreCase("true")) {
           JsonNode currentHostInfo = queryHelper.getCurrentHostInfo(provider.getCloudCode());
           if (!hasHostInfo(currentHostInfo)) {
             throw new IllegalStateException("Cannot use host vpc as there is no vpc");
           }
           String network = currentHostInfo.get("network").asText();
           provider.hostVpcId = network;
-          provider.destVpcId = network;
+          // Destination VPC Network if specified by the client we will use that
+          // for provisioning nodes as part of the provider.
+          if (gcpCloudInfo.customGceNetwork != null) {
+            provider.destVpcId = gcpCloudInfo.customGceNetwork;
+          } else {
+            provider.destVpcId = network;
+          }
           // We need to save the destVpcId into the provider config, because we'll need it during
           // instance creation. Technically, we could make it a ybcloud parameter,
           // but we'd still need to
@@ -814,9 +820,9 @@ public class CloudProviderHandler {
           // As such, since all the
           // config is loaded up as env vars anyway, might as well use in in devops like that...
 
-          gcpMetadata.setCustomGceNetwork(network);
-          if (StringUtils.isBlank(gcpMetadata.getGceProject())) {
-            gcpMetadata.setGceProject(currentHostInfo.get("host_project").asText());
+          gcpCloudInfo.setCustomGceNetwork(network);
+          if (StringUtils.isBlank(gcpCloudInfo.getGceProject())) {
+            gcpCloudInfo.setGceProject(currentHostInfo.get("host_project").asText());
 
             // Backward compatiblity
             if (provider.config != null) {
@@ -895,13 +901,13 @@ public class CloudProviderHandler {
     }
 
     if (provider.getCloudCode().equals(CloudType.aws)) {
-      AWSCloudMetadata awsMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
-      awsMetadata.setAwsHostedZoneId(hostedZoneId);
-      awsMetadata.setAwsHostedZoneName(hostedZoneData.asText());
+      AWSCloudInfo awsCloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
+      awsCloudInfo.setAwsHostedZoneId(hostedZoneId);
+      awsCloudInfo.setAwsHostedZoneName(hostedZoneData.asText());
     } else if (provider.getCloudCode().equals(CloudType.azu)) {
-      AzureCloudMetadata azuMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
-      azuMetadata.setAzuHostedZoneId(hostedZoneId);
-      azuMetadata.setAzuHostedZoneName(hostedZoneData.asText());
+      AzureCloudInfo azuCloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
+      azuCloudInfo.setAzuHostedZoneId(hostedZoneId);
+      azuCloudInfo.setAzuHostedZoneName(hostedZoneData.asText());
     }
   }
 

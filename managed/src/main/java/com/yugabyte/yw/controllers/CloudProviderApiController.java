@@ -26,12 +26,11 @@ import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.forms.RotateAccessKeyFormData;
 import com.yugabyte.yw.forms.ScheduledAccessKeyRotateFormData;
 import com.yugabyte.yw.models.Audit;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.Schedule;
-import com.yugabyte.yw.models.helpers.TaskType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -63,7 +62,7 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result list(UUID customerUUID, String name, String code) {
     CloudType providerCode = code == null ? null : CloudType.valueOf(code);
     List<Provider> providers = Provider.getAll(customerUUID, name, providerCode);
-    providers.forEach(CloudMetadataInterface::mayBeMassageResponse);
+    providers.forEach(CloudInfoInterface::mayBeMassageResponse);
     return PlatformResults.withData(providers);
   }
 
@@ -71,7 +70,7 @@ public class CloudProviderApiController extends AuthenticatedController {
   public Result index(UUID customerUUID, UUID providerUUID) {
     Customer.getOrBadRequest(customerUUID);
     Provider provider = Provider.getOrBadRequest(customerUUID, providerUUID);
-    CloudMetadataInterface.mayBeMassageResponse(provider);
+    CloudInfoInterface.mayBeMassageResponse(provider);
     return PlatformResults.withData(provider);
   }
 
@@ -370,26 +369,26 @@ public class CloudProviderApiController extends AuthenticatedController {
       // as JsonNode only.
       ObjectNode detailsNode = (ObjectNode) details;
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
-        ObjectNode cloudMetadata = (ObjectNode) detailsNode.get("cloudMetadata");
-        if (cloudMetadata == null || cloudMetadata.isEmpty()) {
+        ObjectNode cloudInfo = (ObjectNode) detailsNode.get("cloudInfo");
+        if (cloudInfo == null || cloudInfo.isEmpty()) {
           return requestBody;
         }
-        ObjectNode gcpCloudMetadata = (ObjectNode) cloudMetadata.get("gcp");
-        if (gcpCloudMetadata != null) {
+        ObjectNode gcpCloudInfo = (ObjectNode) cloudInfo.get("gcp");
+        if (gcpCloudInfo != null) {
           Boolean shouldUseHostCredentials = false;
-          if (gcpCloudMetadata.has("useHostCredentials")) {
-            shouldUseHostCredentials = gcpCloudMetadata.get("useHostCredentials").asBoolean();
+          if (gcpCloudInfo.has("useHostCredentials")) {
+            shouldUseHostCredentials = gcpCloudInfo.get("useHostCredentials").asBoolean();
           }
-          if (gcpCloudMetadata.has("gceApplicationCredentials")) {
+          if (gcpCloudInfo.has("gceApplicationCredentials")) {
             String configFileStringContent =
-                gcpCloudMetadata.get("gceApplicationCredentials").toString();
-            gcpCloudMetadata.remove("gceApplicationCredentials");
+                gcpCloudInfo.get("gceApplicationCredentials").toString();
+            gcpCloudInfo.remove("gceApplicationCredentials");
             if (!shouldUseHostCredentials) {
-              gcpCloudMetadata.put("gceApplicationCredentials", configFileStringContent);
+              gcpCloudInfo.put("gceApplicationCredentials", configFileStringContent);
             }
           }
-          cloudMetadata.set("gcp", gcpCloudMetadata);
-          detailsNode.set("cloudMetadata", cloudMetadata);
+          cloudInfo.set("gcp", gcpCloudInfo);
+          detailsNode.set("cloudInfo", cloudInfo);
           ((ObjectNode) requestBody).set("details", detailsNode);
         }
       }

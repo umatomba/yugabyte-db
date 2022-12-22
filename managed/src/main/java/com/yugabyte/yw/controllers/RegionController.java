@@ -18,7 +18,7 @@ import com.yugabyte.yw.forms.PlatformResults.YBPSuccess;
 import com.yugabyte.yw.forms.RegionFormData;
 import com.yugabyte.yw.models.Audit;
 import com.yugabyte.yw.models.AvailabilityZone;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import io.swagger.annotations.Api;
@@ -81,7 +81,7 @@ public class RegionController extends AuthenticatedController {
     List<Provider> providerList = Provider.getAll(customerUUID);
     ArrayNode resultArray = Json.newArray();
     for (Provider provider : providerList) {
-      CloudMetadataInterface.mayBeMassageResponse(provider);
+      CloudInfoInterface.mayBeMassageResponse(provider);
       List<Region> regionList = Region.fetchValidRegions(customerUUID, provider.uuid, 1);
       for (Region region : regionList) {
         ObjectNode regionNode = (ObjectNode) Json.toJson(region);

@@ -748,7 +748,7 @@ public class CloudProviderControllerTest extends FakeDBApplication {
     JsonNode json = Json.parse(contentAsString(result));
     assertEquals(p.uuid, UUID.fromString(json.get("resourceUUID").asText()));
     p.refresh();
-    assertEquals("1234", p.details.cloudMetadata.aws.getAwsHostedZoneId());
+    assertEquals("1234", p.details.cloudInfo.aws.getAwsHostedZoneId());
     assertAuditEntry(1, customer.uuid);
   }
 

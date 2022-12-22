@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.yugabyte.yw.common.config.RuntimeConfigFactory;
 import com.yugabyte.yw.models.AccessKey;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.FileData;
 import com.yugabyte.yw.models.Provider;
@@ -295,7 +295,7 @@ public class AccessManagerTest extends FakeDBApplication {
     Map<String, String> config = new HashMap<>();
     config.put("AWS_ACCESS_KEY_ID", "ACCESS-KEY");
     config.put("AWS_SECRET_ACCESS_KEY", "ACCESS-SECRET");
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(defaultProvider, config);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(defaultProvider, config);
     defaultProvider.save();
 
     createTempFile(TMP_KEYS_PATH, "private.key", "test data");

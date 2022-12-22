@@ -13,8 +13,8 @@ import com.google.api.services.compute.Compute;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.yugabyte.yw.cloud.CloudAPI;
-import com.yugabyte.yw.models.CloudMetadataInterface;
-import com.yugabyte.yw.models.GCPCloudMetadata;
+import com.yugabyte.yw.models.CloudInfoInterface;
+import com.yugabyte.yw.models.GCPCloudInfo;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.helpers.NodeID;
@@ -64,8 +64,8 @@ public class GCPCloudImpl implements CloudAPI {
   // Basic validation to make sure that the credentials work with GCP.
   @Override
   public boolean isValidCreds(Provider provider, String region) {
-    GCPCloudMetadata gcpCloudMetadata = CloudMetadataInterface.getCloudProviderMetadata(provider);
-    String projectId = gcpCloudMetadata.getGceProject();
+    GCPCloudInfo gcpCloudInfo = CloudInfoInterface.getCloudProviderMetadata(provider);
+    String projectId = gcpCloudInfo.getGceProject();
     if (StringUtils.isBlank(projectId)) {
       log.error("Project ID is not set, skipping validation");
       // TODO validate for service account.
@@ -73,7 +73,7 @@ public class GCPCloudImpl implements CloudAPI {
     }
     try {
       ObjectMapper mapper = Json.mapper();
-      JsonNode gcpCredentials = gcpCloudMetadata.getCredentialJSON();
+      JsonNode gcpCredentials = gcpCloudInfo.getCredentialJSON();
       GoogleCredentials credentials =
           GoogleCredentials.fromStream(
               new ByteArrayInputStream(mapper.writeValueAsBytes(gcpCredentials)));

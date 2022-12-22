@@ -15,62 +15,42 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AzureCloudMetadata implements CloudMetadataInterface {
+public class AWSCloudInfo implements CloudInfoInterface {
 
   @JsonIgnore
   final Map<String, String> configKeyMap =
       new HashMap<String, String>() {
         {
-          put("azuTenantId", "AZURE_TENANT_ID");
-          put("azuClientId", "AZURE_CLIENT_ID");
-          put("azuClientSecret", "AZURE_CLIENT_SECRET");
-          put("azuSubscriptionId", "AZURE_SUBSCRIPTION_ID");
-          put("azuRG", "AZURE_RG");
-          put("azuHostedZoneId", "HOSTED_ZONE_ID");
+          put("awsAccessKeyID", "AWS_ACCESS_KEY_ID");
+          put("awsAccessKeySecret", "AWS_SECRET_ACCESS_KEY");
+          put("awsHostedZoneId", "HOSTED_ZONE_ID");
+          put("awsHostedZoneName", "HOSTED_ZONE_NAME");
         }
       };
 
-  @JsonAlias("AZURE_TENANT_ID")
+  @JsonAlias("AWS_ACCESS_KEY_ID")
   @ApiModelProperty
-  public String azuTenantId;
+  public String awsAccessKeyID;
 
-  @JsonAlias("AZURE_CLIENT_ID")
+  @JsonAlias("AWS_SECRET_ACCESS_KEY")
   @ApiModelProperty
-  public String azuClientId;
-
-  @JsonAlias("AZURE_CLIENT_SECRET")
-  @ApiModelProperty
-  public String azuClientSecret;
-
-  @JsonAlias("AZURE_SUBSCRIPTION_ID")
-  @ApiModelProperty
-  public String azuSubscriptionId;
-
-  @JsonAlias("AZURE_RG")
-  @ApiModelProperty
-  public String azuRG;
+  public String awsAccessKeySecret;
 
   @JsonAlias("HOSTED_ZONE_ID")
   @ApiModelProperty
-  public String azuHostedZoneId;
+  public String awsHostedZoneId;
 
   @JsonAlias("HOSTED_ZONE_NAME")
-  @ApiModelProperty(hidden = true)
-  public String azuHostedZoneName;
+  @ApiModelProperty
+  public String awsHostedZoneName;
 
   @JsonIgnore
   public Map<String, String> getEnvVars() {
     Map<String, String> envVars = new HashMap<>();
 
-    if (azuClientId != null) {
-      envVars.put("AZURE_TENANT_ID", azuTenantId);
-      envVars.put("AZURE_CLIENT_ID", azuClientId);
-      envVars.put("AZURE_CLIENT_SECRET", azuClientSecret);
-      envVars.put("AZURE_SUBSCRIPTION_ID", azuSubscriptionId);
-      envVars.put("AZURE_RG", azuRG);
-      if (azuHostedZoneId != null) {
-        envVars.put("HOSTED_ZONE_ID", azuHostedZoneId);
-      }
+    if (awsAccessKeyID != null) {
+      envVars.put("AWS_ACCESS_KEY_ID", awsAccessKeyID);
+      envVars.put("AWS_SECRET_ACCESS_KEY", awsAccessKeySecret);
     }
 
     return envVars;
@@ -89,6 +69,7 @@ public class AzureCloudMetadata implements CloudMetadataInterface {
 
   @JsonIgnore
   public void maskSensitiveData() {
-    this.azuClientSecret = CommonUtils.getMaskedValue(azuClientSecret);
+    this.awsAccessKeyID = CommonUtils.getMaskedValue(awsAccessKeyID);
+    this.awsAccessKeySecret = CommonUtils.getMaskedValue(awsAccessKeySecret);
   }
 }

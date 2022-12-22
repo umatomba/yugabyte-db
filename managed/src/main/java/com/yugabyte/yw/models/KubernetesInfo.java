@@ -16,7 +16,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class KubernetesMetadata implements CloudMetadataInterface {
+public class KubernetesInfo implements CloudInfoInterface {
 
   @JsonIgnore
   final Map<String, String> configKeyMap =

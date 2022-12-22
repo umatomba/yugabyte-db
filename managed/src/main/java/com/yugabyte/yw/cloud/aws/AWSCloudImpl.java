@@ -49,7 +49,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.yugabyte.yw.cloud.CloudAPI;
 import com.yugabyte.yw.common.kms.util.AwsEARServiceUtil;
-import com.yugabyte.yw.models.AWSCloudMetadata;
+import com.yugabyte.yw.models.AWSCloudInfo;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import com.yugabyte.yw.models.helpers.NodeID;

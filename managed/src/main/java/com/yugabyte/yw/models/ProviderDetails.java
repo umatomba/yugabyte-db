@@ -25,13 +25,13 @@ public class ProviderDetails extends MigratedKeyInfoFields {
 
   @Data
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public static class CloudMetadata {
-    @ApiModelProperty public AWSCloudMetadata aws;
-    @ApiModelProperty public AzureCloudMetadata azu;
-    @ApiModelProperty public GCPCloudMetadata gcp;
-    @ApiModelProperty public KubernetesMetadata kubernetes;
-    @ApiModelProperty public OnPremCloudMetadata onprem;
+  public static class CloudInfo {
+    @ApiModelProperty public AWSCloudInfo aws;
+    @ApiModelProperty public AzureCloudInfo azu;
+    @ApiModelProperty public GCPCloudInfo gcp;
+    @ApiModelProperty public KubernetesInfo kubernetes;
+    @ApiModelProperty public OnPremCloudInfo onprem;
   }
 
-  @ApiModelProperty public CloudMetadata cloudMetadata;
+  @ApiModelProperty public CloudInfo cloudInfo;
 }

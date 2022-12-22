@@ -51,7 +51,7 @@ import com.yugabyte.yw.forms.PlatformResults.YBPTask;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams;
 import com.yugabyte.yw.models.AccessKey;
 import com.yugabyte.yw.models.AvailabilityZone;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Customer;
 import com.yugabyte.yw.models.InstanceType;
 import com.yugabyte.yw.models.Provider;
@@ -264,7 +264,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = buildProviderReq("gcp", "Google");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("use_host_vpc", "true");
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
     provider = createProviderTest(provider, ImmutableList.of("region1"), UUID.randomUUID());
     assertEquals("234234", provider.hostVpcId);
     assertEquals("234234", provider.destVpcId);
@@ -402,7 +402,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
       reqConfig.put("YB_HOME_DIR", "/bar");
     }
     providerReq.customerUUID = customer.uuid;
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(providerReq, reqConfig);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(providerReq, reqConfig);
     Provider createdProvider =
         createProviderTest(providerReq, REGION_CODES_FROM_CLOUD_API, UUID.randomUUID());
     Map<String, String> config = createdProvider.getUnmaskedConfig();
@@ -534,11 +534,11 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     bodyJson.put("name", "aws-Provider");
     bodyJson.put("region", "ap-south-1");
     ObjectNode detailsJson = Json.newObject();
-    ObjectNode cloudMetadataJson = Json.newObject();
-    cloudMetadataJson.put("AWS_ACCESS_KEY_ID", "test");
-    cloudMetadataJson.put("AWS_SECRET_ACCESS_KEY", "secret");
-    cloudMetadataJson.put("AWS_HOSTED_ZONE_ID", "1234");
-    detailsJson.set("cloudMetadata", cloudMetadataJson);
+    ObjectNode CloudInfoJson = Json.newObject();
+    CloudInfoJson.put("AWS_ACCESS_KEY_ID", "test");
+    CloudInfoJson.put("AWS_SECRET_ACCESS_KEY", "secret");
+    CloudInfoJson.put("AWS_HOSTED_ZONE_ID", "1234");
+    detailsJson.set("cloudInfo", CloudInfoJson);
     bodyJson.set("details", detailsJson);
     CloudAPI mockCloudAPI = mock(CloudAPI.class);
     when(mockCloudAPIFactory.get(any())).thenReturn(mockCloudAPI);
@@ -553,11 +553,11 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     bodyJson.put("code", "aws");
     bodyJson.put("name", "aws-Provider");
     ObjectNode detailsJson = Json.newObject();
-    ObjectNode cloudMetadataJson = Json.newObject();
-    ObjectNode awsCloudMetadataJson = Json.newObject();
-    awsCloudMetadataJson.put("HOSTED_ZONE_ID", "1234");
-    cloudMetadataJson.set("aws", awsCloudMetadataJson);
-    detailsJson.set("cloudMetadata", cloudMetadataJson);
+    ObjectNode CloudInfoJson = Json.newObject();
+    ObjectNode awsCloudInfoJson = Json.newObject();
+    awsCloudInfoJson.put("HOSTED_ZONE_ID", "1234");
+    CloudInfoJson.set("aws", awsCloudInfoJson);
+    detailsJson.set("cloudInfo", CloudInfoJson);
     bodyJson.set("details", detailsJson);
     mockDnsManagerListFailure("fail", 0);
     Result result = assertPlatformException(() -> createProvider(bodyJson));
@@ -572,11 +572,11 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     bodyJson.put("code", "aws");
     bodyJson.put("name", "aws-Provider");
     ObjectNode detailsJson = Json.newObject();
-    ObjectNode cloudMetadataJson = Json.newObject();
-    ObjectNode awsCloudMetadataJson = Json.newObject();
-    awsCloudMetadataJson.put("HOSTED_ZONE_ID", "1234");
-    cloudMetadataJson.set("aws", awsCloudMetadataJson);
-    detailsJson.set("cloudMetadata", cloudMetadataJson);
+    ObjectNode CloudInfoJson = Json.newObject();
+    ObjectNode awsCloudInfoJson = Json.newObject();
+    awsCloudInfoJson.put("HOSTED_ZONE_ID", "1234");
+    CloudInfoJson.set("aws", awsCloudInfoJson);
+    detailsJson.set("cloudInfo", CloudInfoJson);
     bodyJson.set("details", detailsJson);
 
     mockDnsManagerListFailure("fail", 1);
@@ -682,7 +682,7 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
         "{"
             + "\"code\":\"gcp\","
             + "\"name\":\"test\","
-            + "\"details\": { \"cloudMetadata\": {"
+            + "\"details\": { \"cloudInfo\": {"
             + "\"gcp\": {"
             + "\"gceProject\": \"test-project\" }}}"
             + "}";
@@ -698,18 +698,18 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("gceProject", "test-project");
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
     provider.save();
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
 
     Result providerRes = getProvider(provider.uuid);
     ObjectNode providerJson = (ObjectNode) Json.parse(contentAsString(providerRes));
     ObjectNode details = Json.newObject();
-    ObjectNode cloudMetadataJson = Json.newObject();
-    ObjectNode gcpCloudMetadata = Json.newObject();
-    gcpCloudMetadata.put("gceProject", "test-project-updated");
-    cloudMetadataJson.put("gcp", gcpCloudMetadata);
-    details.set("cloudMetadata", cloudMetadataJson);
+    ObjectNode CloudInfoJson = Json.newObject();
+    ObjectNode gcpCloudInfo = Json.newObject();
+    gcpCloudInfo.put("gceProject", "test-project-updated");
+    CloudInfoJson.put("gcp", gcpCloudInfo);
+    details.set("cloudInfo", CloudInfoJson);
     providerJson.set("details", details);
     providerJson.remove("config");
     Result result = patchProvider(providerJson, provider.uuid);
@@ -729,18 +729,18 @@ public class CloudProviderApiControllerTest extends FakeDBApplication {
     Provider provider = Provider.create(customer.uuid, Common.CloudType.gcp, "test");
     Map<String, String> reqConfig = new HashMap<>();
     reqConfig.put("gceProject", "test-project");
-    CloudMetadataInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
+    CloudInfoInterface.setCloudProviderMetadataFromConfig(provider, reqConfig);
     provider.save();
 
     AccessKey.create(provider.uuid, AccessKey.getDefaultKeyCode(provider), new AccessKey.KeyInfo());
     Result providerRes = getProvider(provider.uuid);
     JsonNode providerJson = Json.parse(contentAsString(providerRes));
     JsonNode details = providerJson.get("details");
-    ObjectNode cloudMetadataJson = (ObjectNode) details.get("cloudMetadata");
-    ObjectNode gcpCloudMetadata = (ObjectNode) cloudMetadataJson.get("gcp");
-    gcpCloudMetadata.put("gceProject", "test-project-updated");
-    cloudMetadataJson.set("gcp", gcpCloudMetadata);
-    ((ObjectNode) details).set("cloudMetadata", cloudMetadataJson);
+    ObjectNode CloudInfoJson = (ObjectNode) details.get("cloudInfo");
+    ObjectNode gcpCloudInfo = (ObjectNode) CloudInfoJson.get("gcp");
+    gcpCloudInfo.put("gceProject", "test-project-updated");
+    CloudInfoJson.set("gcp", gcpCloudInfo);
+    ((ObjectNode) details).set("cloudInfo", CloudInfoJson);
     ((ObjectNode) providerJson).set("details", details);
     ((ObjectNode) providerJson).remove("config");
 

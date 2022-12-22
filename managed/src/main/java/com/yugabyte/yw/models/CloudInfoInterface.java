@@ -13,7 +13,7 @@ import com.yugabyte.yw.common.PlatformServiceException;
 
 import play.libs.Json;
 
-public interface CloudMetadataInterface {
+public interface CloudInfoInterface {
 
   public final ObjectMapper mapper = Json.mapper();
 
@@ -23,53 +23,53 @@ public interface CloudMetadataInterface {
 
   public void maskSensitiveData();
 
-  public static <T extends CloudMetadataInterface> T getCloudProviderMetadata(Provider provider) {
+  public static <T extends CloudInfoInterface> T getCloudProviderMetadata(Provider provider) {
     return getCloudProviderMetadata(provider, false);
   }
 
-  public static <T extends CloudMetadataInterface> T getCloudProviderMetadata(
+  public static <T extends CloudInfoInterface> T getCloudProviderMetadata(
       Provider provider, Boolean maskSensitiveData) {
     ProviderDetails providerDetails = provider.getUnmaskedProviderDetails();
     if (providerDetails == null) {
       return null;
     }
-    ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
-    if (cloudMetadata == null) {
-      cloudMetadata = new ProviderDetails.CloudMetadata();
+    ProviderDetails.CloudInfo cloudInfo = providerDetails.getCloudInfo();
+    if (cloudInfo == null) {
+      cloudInfo = new ProviderDetails.CloudInfo();
     }
     String providerType = provider.code;
     CloudType cloudType = CloudType.valueOf(providerType);
     switch (cloudType) {
       case aws:
-        AWSCloudMetadata awsMetadata = cloudMetadata.getAws();
-        if (awsMetadata != null && maskSensitiveData) {
-          awsMetadata.maskSensitiveData();
+        AWSCloudInfo awsCloudInfo = cloudInfo.getAws();
+        if (awsCloudInfo != null && maskSensitiveData) {
+          awsCloudInfo.maskSensitiveData();
         }
-        return (T) awsMetadata;
+        return (T) awsCloudInfo;
       case gcp:
-        GCPCloudMetadata gcpMetadata = cloudMetadata.getGcp();
-        if (gcpMetadata != null && maskSensitiveData) {
-          gcpMetadata.maskSensitiveData();
+        GCPCloudInfo gcpCloudInfo = cloudInfo.getGcp();
+        if (gcpCloudInfo != null && maskSensitiveData) {
+          gcpCloudInfo.maskSensitiveData();
         }
-        return (T) gcpMetadata;
+        return (T) gcpCloudInfo;
       case azu:
-        AzureCloudMetadata azuMetadata = cloudMetadata.getAzu();
-        if (azuMetadata != null && maskSensitiveData) {
-          azuMetadata.maskSensitiveData();
+        AzureCloudInfo azuCloudInfo = cloudInfo.getAzu();
+        if (azuCloudInfo != null && maskSensitiveData) {
+          azuCloudInfo.maskSensitiveData();
         }
-        return (T) azuMetadata;
+        return (T) azuCloudInfo;
       case kubernetes:
-        KubernetesMetadata kubernetesMetadata = cloudMetadata.getKubernetes();
-        if (kubernetesMetadata != null && maskSensitiveData) {
-          kubernetesMetadata.maskSensitiveData();
+        KubernetesInfo kubernetesInfo = cloudInfo.getKubernetes();
+        if (kubernetesInfo != null && maskSensitiveData) {
+          kubernetesInfo.maskSensitiveData();
         }
-        return (T) kubernetesMetadata;
+        return (T) kubernetesInfo;
       case onprem:
-        OnPremCloudMetadata onPremMetadata = cloudMetadata.getOnprem();
-        if (onPremMetadata != null && maskSensitiveData) {
-          onPremMetadata.maskSensitiveData();
+        OnPremCloudInfo onpremCloudInfo = cloudInfo.getOnprem();
+        if (onpremCloudInfo != null && maskSensitiveData) {
+          onpremCloudInfo.maskSensitiveData();
         }
-        return (T) onPremMetadata;
+        return (T) onpremCloudInfo;
       case local:
         // Import Universe case
         return null;
@@ -85,34 +85,34 @@ public interface CloudMetadataInterface {
   public static void setCloudProviderMetadataFromConfig(
       Provider provider, Map<String, String> config) {
     ProviderDetails providerDetails = provider.getUnmaskedProviderDetails();
-    ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
-    if (cloudMetadata == null) {
-      cloudMetadata = new ProviderDetails.CloudMetadata();
-      providerDetails.setCloudMetadata(cloudMetadata);
+    ProviderDetails.CloudInfo cloudInfo = providerDetails.getCloudInfo();
+    if (cloudInfo == null) {
+      cloudInfo = new ProviderDetails.CloudInfo();
+      providerDetails.setCloudInfo(cloudInfo);
     }
     CloudType cloudType = CloudType.valueOf(provider.code);
     switch (cloudType) {
       case aws:
-        AWSCloudMetadata awsCloudMetadata = mapper.convertValue(config, AWSCloudMetadata.class);
-        cloudMetadata.setAws(awsCloudMetadata);
+        AWSCloudInfo awsCloudInfo = mapper.convertValue(config, AWSCloudInfo.class);
+        cloudInfo.setAws(awsCloudInfo);
         break;
       case gcp:
-        GCPCloudMetadata gcpCloudMetadata = mapper.convertValue(config, GCPCloudMetadata.class);
-        cloudMetadata.setGcp(gcpCloudMetadata);
+        GCPCloudInfo gcpCloudInfo = mapper.convertValue(config, GCPCloudInfo.class);
+        cloudInfo.setGcp(gcpCloudInfo);
         break;
       case azu:
-        AzureCloudMetadata azuCloudMetadata = mapper.convertValue(config, AzureCloudMetadata.class);
-        cloudMetadata.setAzu(azuCloudMetadata);
+        AzureCloudInfo azuCloudInfo = mapper.convertValue(config, AzureCloudInfo.class);
+        cloudInfo.setAzu(azuCloudInfo);
         break;
       case kubernetes:
-        KubernetesMetadata kubernetesMetadata =
-            mapper.convertValue(config, KubernetesMetadata.class);
-        cloudMetadata.setKubernetes(kubernetesMetadata);
+        KubernetesInfo kubernetesInfo =
+            mapper.convertValue(config, KubernetesInfo.class);
+        cloudInfo.setKubernetes(kubernetesInfo);
         break;
       case onprem:
-        OnPremCloudMetadata onPremCloudMetadata =
-            mapper.convertValue(config, OnPremCloudMetadata.class);
-        cloudMetadata.setOnprem(onPremCloudMetadata);
+        OnPremCloudInfo onPremCloudInfo =
+            mapper.convertValue(config, OnPremCloudInfo.class);
+        cloudInfo.setOnprem(onPremCloudInfo);
         break;
       case local:
         // Import Universe case
@@ -130,23 +130,23 @@ public interface CloudMetadataInterface {
     if (config != null && !config.isNull()) {
       if (requestBody.get("code").asText().equals(CloudType.gcp.name())) {
         ObjectNode details = mapper.createObjectNode();
-        ObjectNode cloudMetadata = mapper.createObjectNode();
-        ObjectNode gcpCloudMetadata = mapper.createObjectNode();
+        ObjectNode cloudInfo = mapper.createObjectNode();
+        ObjectNode gcpCloudInfo = mapper.createObjectNode();
 
         Boolean shouldUseHostCredentials =
             config.has("use_host_credentials") && config.get("use_host_credentials").asBoolean();
-        gcpCloudMetadata.set("host_project_id", config.get("host_project_id"));
+        gcpCloudInfo.set("host_project_id", config.get("host_project_id"));
         if (!shouldUseHostCredentials && config.has("config_file_contents")) {
-          gcpCloudMetadata.put(
+          gcpCloudInfo.put(
               "config_file_contents", config.get("config_file_contents").toString());
         }
         if (config.has("use_host_vpc")) {
-          gcpCloudMetadata.set("use_host_vpc", config.get("use_host_vpc"));
+          gcpCloudInfo.set("use_host_vpc", config.get("use_host_vpc"));
         }
-        gcpCloudMetadata.set("YB_FIREWALL_TAGS", config.get("YB_FIREWALL_TAGS"));
+        gcpCloudInfo.set("YB_FIREWALL_TAGS", config.get("YB_FIREWALL_TAGS"));
 
-        cloudMetadata.set("gcp", gcpCloudMetadata);
-        details.set("cloudMetadata", cloudMetadata);
+        cloudInfo.set("gcp", gcpCloudInfo);
+        details.set("cloudInfo", cloudInfo);
         details.set("airGapInstall", config.get("airGapInstall"));
 
         reqBody.set("details", details);
@@ -159,37 +159,37 @@ public interface CloudMetadataInterface {
   public static void mayBeMassageResponse(Provider p) {
     Map<String, String> config = p.getUnmaskedConfig();
     ProviderDetails providerDetails = p.getUnmaskedProviderDetails();
-    ProviderDetails.CloudMetadata cloudMetadata = providerDetails.getCloudMetadata();
-    if (cloudMetadata == null) {
+    ProviderDetails.CloudInfo cloudInfo = providerDetails.getCloudInfo();
+    if (cloudInfo == null) {
       return;
     }
     CloudType cloudType = CloudType.valueOf(p.code);
-    CloudMetadataInterface cloudMetadataInterface = null;
+    CloudInfoInterface cloudInfoInterface = null;
     switch (cloudType) {
       case aws:
-        cloudMetadataInterface = cloudMetadata.getAws();
+        cloudInfoInterface = cloudInfo.getAws();
         break;
       case gcp:
-        cloudMetadataInterface = cloudMetadata.getGcp();
+        cloudInfoInterface = cloudInfo.getGcp();
         break;
       case azu:
-        cloudMetadataInterface = cloudMetadata.getAzu();
+        cloudInfoInterface = cloudInfo.getAzu();
         break;
       case kubernetes:
-        cloudMetadataInterface = cloudMetadata.getKubernetes();
+        cloudInfoInterface = cloudInfo.getKubernetes();
         break;
       case onprem:
-        cloudMetadataInterface = cloudMetadata.getOnprem();
+        cloudInfoInterface = cloudInfo.getOnprem();
         break;
       case local:
         // Import Universe case
       default:
         break;
     }
-    if (cloudMetadataInterface == null) {
+    if (cloudInfoInterface == null) {
       return;
     }
-    config = cloudMetadataInterface.getConfigMapForUIOnlyAPIs(config);
+    config = cloudInfoInterface.getConfigMapForUIOnlyAPIs(config);
     p.config = maskConfigNew(config);
   }
 }

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.yugabyte.yw.commissioner.Common;
 import com.yugabyte.yw.common.config.RuntimeConfigFactory;
-import com.yugabyte.yw.models.CloudMetadataInterface;
+import com.yugabyte.yw.models.CloudInfoInterface;
 import com.yugabyte.yw.models.Provider;
 import com.yugabyte.yw.models.Region;
 import java.util.ArrayList;
@@ -133,9 +133,9 @@ public abstract class DevopsBase {
       commandList.add("--region");
       commandList.add(region.code);
       try {
-        CloudMetadataInterface cloudMetadata =
-            CloudMetadataInterface.getCloudProviderMetadata(region.provider);
-        extraVars.putAll(cloudMetadata.getEnvVars());
+        CloudInfoInterface cloudInfo =
+            CloudInfoInterface.getCloudProviderMetadata(region.provider);
+        extraVars.putAll(cloudInfo.getEnvVars());
       } catch (Exception e) {
         log.error("Failed to retrieve env variables for the provider", e);
       }
@@ -143,9 +143,9 @@ public abstract class DevopsBase {
       provider = Provider.get(providerUUID);
       commandList.add(provider.code);
       try {
-        CloudMetadataInterface cloudMetadata =
-            CloudMetadataInterface.getCloudProviderMetadata(provider);
-        extraVars.putAll(cloudMetadata.getEnvVars());
+        CloudInfoInterface cloudInfo =
+            CloudInfoInterface.getCloudProviderMetadata(provider);
+        extraVars.putAll(cloudInfo.getEnvVars());
       } catch (Exception e) {
         log.error("Failed to retrieve env variables for the provider", e);
       }
