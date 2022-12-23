@@ -21,11 +21,11 @@ import play.libs.Json;
 
 import org.flywaydb.core.api.migration.jdbc.BaseJdbcMigration;
 
-public class V226__Provider_persist_details extends BaseJdbcMigration {
+public class V227__Provider_persist_details extends BaseJdbcMigration {
 
   @Override
   public void migrate(Connection connection) throws Exception {
-    Ebean.execute(V226__Provider_persist_details::migrateConfigToDetails);
+    Ebean.execute(V227__Provider_persist_details::migrateConfigToDetails);
   }
 
   public static void migrateConfigToDetails() {
@@ -38,7 +38,7 @@ public class V226__Provider_persist_details extends BaseJdbcMigration {
 
         // Massage the config to be stored in newer format.
         if (provider.getCloudCode().equals(CloudType.gcp)) {
-          config = V226__Provider_persist_details.massageGCPConfig(config);
+          config = V227__Provider_persist_details.massageGCPConfig(config);
         }
         CloudInfoInterface.setCloudProviderMetadataFromConfig(provider, config);
         provider.save();
@@ -83,8 +83,6 @@ public class V226__Provider_persist_details extends BaseJdbcMigration {
       }
     }
     modifiedConfigMap.put("config_file_contents", gcpCredentials.toString());
-    System.out.println("Testing SHUBHAM");
-    System.out.println(modifiedConfigMap);
     return modifiedConfigMap;
   }
 }
