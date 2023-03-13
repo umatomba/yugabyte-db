@@ -16,7 +16,6 @@ package com.yugabyte.yw.controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import com.yugabyte.yw.common.ConfigHelper;
 import com.yugabyte.yw.common.PlatformServiceException;
 import com.yugabyte.yw.common.ReleaseManager;
 import com.yugabyte.yw.common.ReleaseManager.ReleaseMetadata;
@@ -37,9 +36,9 @@ import com.yugabyte.yw.models.Schedule;
 import com.yugabyte.yw.models.Universe;
 import com.yugabyte.yw.models.UniverseSpec;
 import com.yugabyte.yw.models.UniverseSpec.PlatformPaths;
+import com.yugabyte.yw.models.XClusterConfig;
 import com.yugabyte.yw.models.configs.CustomerConfig;
 import com.yugabyte.yw.models.helpers.TaskType;
-import com.yugabyte.yw.models.XClusterConfig;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,8 +54,6 @@ import play.mvc.Result;
 public class AttachDetachController extends AbstractPlatformController {
 
   @Inject private Config config;
-
-  @Inject private ConfigHelper configHelper;
 
   @Inject private RuntimeConfGetter confGetter;
 
@@ -86,7 +83,6 @@ public class AttachDetachController extends AbstractPlatformController {
         InstanceType.findByProvider(
             provider,
             config,
-            configHelper,
             confGetter.getConfForScope(provider, ProviderConfKeys.allowUnsupportedInstances));
 
     List<XClusterConfig> xClusterConfigs =

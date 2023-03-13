@@ -53,7 +53,7 @@ public class PackagesController extends AbstractPlatformController {
             + "/"
             + joiner.toString()
             + fileExt;
-    response().setContentType("application/gzip");
+    response().setHeader("Content-Type", "application/gzip");
     return Results.ok(new File(fileLoc));
   }
 }

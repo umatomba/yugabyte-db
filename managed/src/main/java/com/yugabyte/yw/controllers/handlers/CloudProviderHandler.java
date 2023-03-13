@@ -91,7 +91,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.Configuration;
 import play.Environment;
 import play.libs.Json;
 import scala.reflect.internal.tpe.TypeMaps.ContainsCollector;
@@ -103,7 +102,6 @@ import io.fabric8.kubernetes.api.model.Container;
 import com.yugabyte.yw.common.KubernetesManagerFactory;
 
 import play.Application;
-import play.Play;
 
 public class CloudProviderHandler {
   public static final String YB_FIREWALL_TAGS = "YB_FIREWALL_TAGS";
@@ -132,7 +130,6 @@ public class CloudProviderHandler {
   @Inject private CloudAPI.Factory cloudAPIFactory;
   @Inject private ProviderValidator providerValidator;
   @Inject private KubernetesManagerFactory kubernetesManagerFactory;
-  @Inject private Configuration appConfig;
   @Inject private Config config;
   @Inject private CloudQueryHelper queryHelper;
   @Inject private AccessKeyRotationUtil accessKeyRotationUtil;
@@ -529,8 +526,8 @@ public class CloudProviderHandler {
         throw new PlatformServiceException(
             INTERNAL_SERVER_ERROR, "No region and zone information found.");
       }
-      String storageClass = appConfig.getString("yb.kubernetes.storageClass");
-      String pullSecretName = appConfig.getString("yb.kubernetes.pullSecretName");
+      String storageClass = config.getString("yb.kubernetes.storageClass");
+      String pullSecretName = config.getString("yb.kubernetes.pullSecretName");
       if (storageClass == null || pullSecretName == null) {
         LOG.error("Required configuration keys from yb.kubernetes.* are missing.");
         throw new PlatformServiceException(
@@ -721,8 +718,7 @@ public class CloudProviderHandler {
   public String getRegionNameFromCode(String code) {
     LOG.info("Code is:", code);
     String regionFile = "k8s_regions.json";
-    Application app = play.Play.application();
-    InputStream inputStream = app.resourceAsStream(regionFile);
+    InputStream inputStream = environment.resourceAsStream(regionFile);
     JsonNode jsonNode = Json.parse(inputStream);
     JsonNode nameNode = jsonNode.get(code);
     if (nameNode == null || nameNode.isMissingNode()) {

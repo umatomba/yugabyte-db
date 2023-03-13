@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import com.yugabyte.yw.commissioner.Commissioner;
 import com.yugabyte.yw.commissioner.Common;
 import com.yugabyte.yw.commissioner.tasks.params.RotateAccessKeyParams;
@@ -48,7 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class AccessManager extends DevopsBase {
 
-  private final play.Configuration appConfig;
+  private final Config appConfig;
   private final Commissioner commissioner;
 
   private static final String YB_CLOUD_COMMAND_TYPE = "access";
@@ -58,7 +59,7 @@ public class AccessManager extends DevopsBase {
   public static final String STORAGE_PATH = "yb.storage.path";
 
   @Inject
-  public AccessManager(play.Configuration appConfig, Commissioner commissioner) {
+  public AccessManager(Config appConfig, Commissioner commissioner) {
     this.appConfig = appConfig;
     this.commissioner = commissioner;
   }

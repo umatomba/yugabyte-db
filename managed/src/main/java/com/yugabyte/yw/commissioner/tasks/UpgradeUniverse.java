@@ -28,7 +28,6 @@ import com.yugabyte.yw.commissioner.tasks.subtasks.CreateRootVolumes;
 import com.yugabyte.yw.commissioner.tasks.subtasks.ReplaceRootVolume;
 import com.yugabyte.yw.commissioner.tasks.subtasks.UniverseSetTlsParams;
 import com.yugabyte.yw.commissioner.tasks.subtasks.UpdateNodeDetails;
-import com.yugabyte.yw.common.ConfigHelper;
 import com.yugabyte.yw.common.PlacementInfoUtil;
 import com.yugabyte.yw.common.certmgmt.CertificateHelper;
 import com.yugabyte.yw.common.gflags.GFlagsUtil;
@@ -138,8 +137,7 @@ public class UpgradeUniverse extends UniverseDefinitionTaskBase {
         List<InstanceType> instanceTypes =
             InstanceType.findByProvider(
                 Provider.getOrBadRequest(UUID.fromString(provider)),
-                Play.current().injector().instanceOf(Config.class),
-                Play.current().injector().instanceOf(ConfigHelper.class));
+                Play.current().injector().instanceOf(Config.class));
         log.info(instanceTypes.toString());
         InstanceType newInstanceType =
             instanceTypes

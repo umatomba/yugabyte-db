@@ -64,7 +64,7 @@ public class AccessManagerTest extends FakeDBApplication {
 
   @Mock ShellProcessHandler shellProcessHandler;
 
-  @Mock play.Configuration appConfig;
+  @Mock Config appConfig;
 
   @Mock RuntimeConfigFactory runtimeConfigFactory;
 

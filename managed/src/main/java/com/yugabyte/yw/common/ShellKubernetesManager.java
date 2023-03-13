@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import com.yugabyte.yw.common.SupportBundleUtil.KubernetesResourceType;
 import com.yugabyte.yw.common.config.RuntimeConfGetter;
 import io.fabric8.kubernetes.api.model.Node;
@@ -59,7 +60,7 @@ public class ShellKubernetesManager extends KubernetesManager {
 
   private final RuntimeConfGetter confGetter;
 
-  private final play.Configuration appConfig;
+  private final Config appConfig;
 
   public static final Logger LOG = LoggerFactory.getLogger(ShellKubernetesManager.class);
 
@@ -68,7 +69,7 @@ public class ShellKubernetesManager extends KubernetesManager {
       ReleaseManager releaseManager,
       ShellProcessHandler shellProcessHandler,
       RuntimeConfGetter confGetter,
-      play.Configuration appConfig) {
+      Config appConfig) {
     this.releaseManager = releaseManager;
     this.shellProcessHandler = shellProcessHandler;
     this.confGetter = confGetter;

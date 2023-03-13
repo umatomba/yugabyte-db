@@ -2,6 +2,7 @@
 
 package com.yugabyte.yw.models;
 
+import com.typesafe.config.Config;
 import com.yugabyte.yw.common.AccessManager;
 import com.yugabyte.yw.common.Util;
 import com.yugabyte.yw.common.config.RuntimeConfigFactory;
@@ -115,7 +116,7 @@ public class FileData extends Model {
   }
 
   public static String getStoragePath() {
-    play.Configuration appConfig = Play.current().injector().instanceOf(play.Configuration.class);
+    Config appConfig = Play.current().injector().instanceOf(Config.class);
     return appConfig.getString(YB_STORAGE_PATH);
   }
 

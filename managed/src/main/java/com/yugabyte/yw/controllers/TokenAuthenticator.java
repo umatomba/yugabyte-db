@@ -30,10 +30,8 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.play.PlayWebContext;
 import org.pac4j.play.store.PlaySessionStore;
-import play.mvc.Action;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Results;
+import play.libs.typedmap.TypedKey;
+import play.mvc.*;
 
 @Slf4j
 public class TokenAuthenticator extends Action.Simple {
@@ -58,6 +56,10 @@ public class TokenAuthenticator extends Action.Simple {
   public static final String API_TOKEN_HEADER = "X-AUTH-YW-API-TOKEN";
   public static final String API_JWT_HEADER = "X-AUTH-YW-API-JWT";
   public static final String COOKIE_PLAY_SESSION = "PLAY_SESSION";
+
+  public static final TypedKey<Customer> CUSTOMER = TypedKey.create("customer");
+
+  public static final TypedKey<Users> USER = TypedKey.create("user");
 
   private final Config config;
 
@@ -130,9 +132,10 @@ public class TokenAuthenticator extends Action.Simple {
 
   @Override
   public CompletionStage<Result> call(Http.Context ctx) {
-    String path = ctx.request().path();
+    Http.Request req = ctx.request();
+    String path = req.path();
     String endPoint = "";
-    String requestType = ctx.request().method();
+    String requestType = req.method();
     Pattern pattern = Pattern.compile(".*/customers/([a-zA-Z0-9-]+)(/.*)?");
     Matcher matcher = pattern.matcher(path);
     UUID custUUID = null;
@@ -145,7 +148,7 @@ public class TokenAuthenticator extends Action.Simple {
     if (Pattern.matches(
             String.format("^.*/universes/%s/proxy/%s/(.*)$", patternForUUID, patternForHost), path)
         && !config.getBoolean("yb.security.enable_auth_for_proxy_metrics")) {
-      return delegate.call(ctx);
+      return delegate.call(req);
     }
 
     if (matcher.find()) {
@@ -168,14 +171,18 @@ public class TokenAuthenticator extends Action.Simple {
         return CompletableFuture.completedFuture(Results.forbidden("User doesn't have access"));
       }
       // TODO: withUsername returns new request that is ignored. Maybe a bug.
-      ctx.request().withUsername(user.getEmail());
+      // req = req.addAttr(Security.USERNAME, user.getEmail());
+      // req = req.addAttr(CUSTOMER, cust);
+      // req = req.addAttr(USER, user);
+
+      ctx.args.put("username", user.getEmail());
       ctx.args.put("customer", cust);
       ctx.args.put("user", userService.getUserWithFeatures(cust, user));
     } else {
       // Send Forbidden Response if Authentication Fails.
       return CompletableFuture.completedFuture(Results.forbidden("Unable To Authenticate User"));
     }
-    return delegate.call(ctx);
+    return delegate.call(req);
   }
 
   public boolean checkAuthentication(Http.Context ctx, Set<Role> roles) {

@@ -112,7 +112,7 @@ public class PitrControllerTest extends FakeDBApplication {
             + "/"
             + keyspaceName
             + "/pitr_config";
-    return FakeApiHelper.doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
+    return doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
   }
 
   private Result performPitr(UUID universeUUID, JsonNode bodyJson) {
@@ -124,7 +124,7 @@ public class PitrControllerTest extends FakeDBApplication {
             + "/universes/"
             + universeUUID.toString()
             + "/pitr";
-    return FakeApiHelper.doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
+    return doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
   }
 
   @Test
@@ -293,7 +293,7 @@ public class PitrControllerTest extends FakeDBApplication {
             + "/universes/"
             + universeUUID.toString()
             + "/pitr_config";
-    return FakeApiHelper.doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
+    return doRequestWithAuthTokenAndBody(method, url, authToken, bodyJson);
   }
 
   @Test
