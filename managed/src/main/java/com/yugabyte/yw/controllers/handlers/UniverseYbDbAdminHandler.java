@@ -30,12 +30,14 @@ import com.yugabyte.yw.models.Universe;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
 import play.mvc.Http;
 
+@Singleton
 public class UniverseYbDbAdminHandler {
   @VisibleForTesting
   public static final String RUN_QUERY_ISNT_ALLOWED =

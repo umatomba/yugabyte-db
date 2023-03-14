@@ -728,7 +728,7 @@ public class SessionController extends AbstractPlatformController {
   }
 
   private Users getCurrentUser() {
-    UserWithFeatures userWithFeatures = (UserWithFeatures) Http.Context.current().args.get("user");
+    UserWithFeatures userWithFeatures = ctx().request().attrs().get(TokenAuthenticator.USER);
     return userWithFeatures.getUser();
   }
 }

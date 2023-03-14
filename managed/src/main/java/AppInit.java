@@ -160,8 +160,8 @@ public class AppInit {
 
       // Enter all the configuration data. This is the first thing that should be
       // done as the other init steps may depend on this data.
-      configHelper.loadConfigsToDB(application);
-      configHelper.loadSoftwareVersiontoDB(application);
+      configHelper.loadConfigsToDB(environment);
+      configHelper.loadSoftwareVersiontoDB(environment);
 
       // Run and delete any extra migrations.
       for (ExtraMigration m : ExtraMigration.getAll()) {
@@ -177,7 +177,7 @@ public class AppInit {
               () -> {
                 try {
                   log.info("Attempting to query latest ARM release link.");
-                  releaseManager.findLatestArmRelease(configHelper.getCurrentVersion(application));
+                  releaseManager.findLatestArmRelease(ConfigHelper.getCurrentVersion(environment));
                   log.info("Imported ARM release download link.");
                 } catch (Exception e) {
                   log.warn("Error importing ARM release download link", e);

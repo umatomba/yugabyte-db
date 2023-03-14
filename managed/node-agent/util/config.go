@@ -1,6 +1,6 @@
-/*
- * Copyright (c) YugaByte, Inc.
- */package util
+// Copyright (c) YugaByte, Inc.
+
+package util
 
 import (
 	"context"

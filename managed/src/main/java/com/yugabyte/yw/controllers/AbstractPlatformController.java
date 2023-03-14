@@ -26,7 +26,6 @@ import io.swagger.annotations.SecurityDefinition;
 import io.swagger.annotations.SwaggerDefinition;
 import play.libs.Json;
 import play.mvc.Controller;
-import play.mvc.Http;
 import play.mvc.With;
 
 /**
@@ -74,7 +73,7 @@ public abstract class AbstractPlatformController extends Controller {
   @Inject private AuditService auditService;
 
   protected AuditService auditService() {
-    UserWithFeatures user = (UserWithFeatures) Http.Context.current().args.get("user");
+    UserWithFeatures user = ctx().request().attrs().get(TokenAuthenticator.USER);
     if (user == null) {
       throw new IllegalStateException("Shouldn't audit unauthenticated requests!");
     }

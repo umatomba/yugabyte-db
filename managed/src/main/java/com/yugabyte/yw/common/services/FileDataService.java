@@ -6,7 +6,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.yugabyte.yw.common.ConfigHelper;
 import com.yugabyte.yw.common.ConfigHelper.ConfigType;
-import com.yugabyte.yw.common.config.RuntimeConfigFactory;
+import com.yugabyte.yw.common.config.GlobalConfKeys;
+import com.yugabyte.yw.common.config.RuntimeConfGetter;
 import com.yugabyte.yw.models.FileData;
 import java.io.File;
 import java.util.Collection;
@@ -27,24 +28,22 @@ public class FileDataService {
   private static final List<String> FILE_DIRECTORY_TO_SYNC =
       ImmutableList.of("keys", "certs", "licenses", "node-agent");
 
-  private final RuntimeConfigFactory runtimeConfigFactory;
+  private final RuntimeConfGetter confGetter;
   private final ConfigHelper configHelper;
 
   @Inject
-  public FileDataService(RuntimeConfigFactory runtimeConfigFactory, ConfigHelper configHelper) {
-    this.runtimeConfigFactory = runtimeConfigFactory;
+  public FileDataService(RuntimeConfGetter confGetter, ConfigHelper configHelper) {
+    this.confGetter = confGetter;
     this.configHelper = configHelper;
   }
 
   public void syncFileData(String storagePath, Boolean ywFileDataSynced) {
     Boolean suppressExceptionsDuringSync =
-        runtimeConfigFactory.globalRuntimeConf().getBoolean("yb.fs_stateless.suppress_error");
+        confGetter.getGlobalConf(GlobalConfKeys.fsStatelessSuppressError);
     int fileCountThreshold =
-        runtimeConfigFactory.globalRuntimeConf().getInt("yb.fs_stateless.max_files_count_persist");
+        confGetter.getGlobalConf(GlobalConfKeys.fsStatelessMaxFilesCountPersist);
     Boolean disableSyncDBStateToFS =
-        runtimeConfigFactory
-            .globalRuntimeConf()
-            .getBoolean("yb.fs_stateless.disable_sync_db_to_fs_startup");
+        confGetter.getGlobalConf(GlobalConfKeys.disableSyncDbToFsStartup);
     try {
       long fileSyncStartTime = System.currentTimeMillis();
       Collection<File> diskFiles = Collections.emptyList();
@@ -85,7 +84,7 @@ public class FileDataService {
         // For all files only on disk, update them in the DB.
         for (String file : fileOnlyOnDisk) {
           log.info("Syncing file " + file + " to the DB");
-          FileData.writeFileToDB(storagePath + file, storagePath, runtimeConfigFactory);
+          FileData.writeFileToDB(storagePath + file, storagePath, confGetter);
         }
         log.info("Successfully Written " + fileOnlyOnDisk.size() + " files to DB.");
       }

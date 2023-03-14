@@ -169,7 +169,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.9.4",
   "commons-validator" % "commons-validator" % "1.7",
   "org.apache.velocity" % "velocity-engine-core" % "2.3",
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.13.5",
   "com.fasterxml.woodstox" % "woodstox-core" % "6.4.0",
   "com.jayway.jsonpath" % "json-path" % "2.6.0",
   "commons-io" % "commons-io" % "2.8.0",
@@ -439,7 +438,6 @@ libraryDependencies += "org.yb" % "yb-perf-advisor" % "1.0.0-b21"
 
 libraryDependencies ++= Seq(
   "io.netty" % "netty-tcnative-boringssl-static" % "2.0.54.Final",
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % "2.9.10",
   "org.slf4j" % "slf4j-ext" % "1.7.26",
   "net.minidev" % "json-smart" % "2.4.8",
   "com.nimbusds" % "nimbus-jose-jwt" % "7.9",
@@ -450,7 +448,23 @@ dependencyOverrides += "com.google.guava" % "guava" % "23.0"
 // SSO functionality only works on the older version of nimbusds.
 // Azure library upgrade tries to upgrade nimbusds to latest version.
 dependencyOverrides += "com.nimbusds" % "oauth2-oidc-sdk" % "7.1.1"
-dependencyOverrides +=  "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.5"
+
+val jacksonVersion         = "2.14.2"
+
+val jacksonOverrides = Seq(
+  "com.fasterxml.jackson.core"       % "jackson-core",
+  "com.fasterxml.jackson.core"       % "jackson-annotations",
+  "com.fasterxml.jackson.core"       % "jackson-databind",
+  "com.fasterxml.jackson.datatype"   % "jackson-datatype-jdk8",
+  "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml",
+  "com.fasterxml.jackson.module"     % "jackson-module-parameter-names",
+  "com.fasterxml.jackson.module"     %% "jackson-module-scala",
+).map(_ % jacksonVersion)
+
+dependencyOverrides ++= jacksonOverrides
 
 excludeDependencies += "org.eclipse.jetty" % "jetty-io"
 excludeDependencies += "org.eclipse.jetty" % "jetty-server"

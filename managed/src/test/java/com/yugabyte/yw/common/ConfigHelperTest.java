@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
-import play.Application;
+import play.Environment;
 import play.libs.Json;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,7 +38,7 @@ public class ConfigHelperTest extends FakeDBApplication {
 
   ConfigHelper configHelper;
 
-  @Mock Application application;
+  @Mock Environment environment;
 
   @Before
   public void beforeTest() throws IOException {
@@ -71,8 +71,8 @@ public class ConfigHelperTest extends FakeDBApplication {
     Map<String, Object> jsonMap = new HashMap();
     jsonMap.put("version_number", "1.1.1.1");
     jsonMap.put("build_number", "12345");
-    when(application.environment().resourceAsStream(configFile)).thenReturn(asJsonStream(jsonMap));
-    configHelper.loadSoftwareVersiontoDB(application);
+    when(environment.resourceAsStream(configFile)).thenReturn(asJsonStream(jsonMap));
+    configHelper.loadSoftwareVersiontoDB(environment);
     assertEquals(
         ImmutableMap.of("version", "1.1.1.1-b12345"),
         configHelper.getConfig(ConfigHelper.ConfigType.SoftwareVersion));
@@ -84,15 +84,14 @@ public class ConfigHelperTest extends FakeDBApplication {
     map.put("config-1", "foo");
     map.put("config-2", "bar");
 
-    when(application.classloader()).thenReturn(ClassLoader.getSystemClassLoader());
+    when(environment.classLoader()).thenReturn(ClassLoader.getSystemClassLoader());
     for (ConfigHelper.ConfigType configType : ConfigHelper.ConfigType.values()) {
       if (configType.getConfigFile() == null) {
         continue;
       }
-      when(application.environment().resourceAsStream(configType.getConfigFile()))
-          .thenReturn(asYamlStream(map));
+      when(environment.resourceAsStream(configType.getConfigFile())).thenReturn(asYamlStream(map));
     }
-    configHelper.loadConfigsToDB(application);
+    configHelper.loadConfigsToDB(environment);
 
     for (ConfigHelper.ConfigType configType : ConfigHelper.ConfigType.values()) {
       if (configType.getConfigFile() != null) {
@@ -105,8 +104,8 @@ public class ConfigHelperTest extends FakeDBApplication {
 
   @Test(expected = YAMLException.class)
   public void testLoadConfigsToDBWithoutFile() {
-    when(application.classloader()).thenReturn(ClassLoader.getSystemClassLoader());
-    configHelper.loadConfigsToDB(application);
+    when(environment.classLoader()).thenReturn(ClassLoader.getSystemClassLoader());
+    configHelper.loadConfigsToDB(environment);
   }
 
   @Test

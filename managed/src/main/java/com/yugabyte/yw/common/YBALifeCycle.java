@@ -10,19 +10,21 @@
 package com.yugabyte.yw.common;
 
 import com.google.inject.Inject;
-import io.ebean.Ebean;
-import play.Application;
+import com.typesafe.config.Config;
+import play.Environment;
 
 /** Play lifecycle does not give onStartup event */
 public class YBALifeCycle {
 
-  @Inject private final ConfigHelper configHelper;
-  private final Application application;
+  private final Config config;
+  private final ConfigHelper configHelper;
+  private final Environment environment;
 
   @Inject
-  public YBALifeCycle(ConfigHelper configHelper, Application application) {
+  public YBALifeCycle(Config config, ConfigHelper configHelper, Environment environment) {
+    this.config = config;
     this.configHelper = configHelper;
-    this.application = application;
+    this.environment = environment;
     onStart();
   }
 
@@ -36,16 +38,10 @@ public class YBALifeCycle {
    * `yb.is_platform_downgrade_allowed`
    */
   private void checkIfDowngrade() {
-    boolean isFreshInstall =
-        !Ebean.getDefaultServer()
-            .createSqlQuery(
-                "SELECT * FROM information_schema.tables WHERE table_name = 'schema_version'")
-            .findOneOrEmpty()
-            .isPresent();
-    if (isFreshInstall) {
+    if (Util.isFreshInstall()) {
       return;
     }
-    String version = ConfigHelper.getCurrentVersion(application);
+    String version = ConfigHelper.getCurrentVersion(environment);
 
     String previousSoftwareVersion =
         configHelper
@@ -53,8 +49,7 @@ public class YBALifeCycle {
             .getOrDefault("version", "")
             .toString();
 
-    boolean isPlatformDowngradeAllowed =
-        application.config().getBoolean("yb.is_platform_downgrade_allowed");
+    boolean isPlatformDowngradeAllowed = config.getBoolean("yb.is_platform_downgrade_allowed");
 
     if (Util.compareYbVersions(previousSoftwareVersion, version, true) > 0
         && !isPlatformDowngradeAllowed) {

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
-import play.Application;
+import play.Environment;
 import play.libs.Json;
 
 @Singleton
@@ -79,31 +79,28 @@ public class ConfigHelper {
     return type.getRegionMetadataConfigType().map(this::getConfig).orElse(Collections.emptyMap());
   }
 
-  public static String getCurrentVersion(Application app) {
+  public static String getCurrentVersion(Environment environment) {
 
     String configFile = "version_metadata.json";
-    InputStream inputStream = app.environment().resourceAsStream(configFile);
+    InputStream inputStream = environment.resourceAsStream(configFile);
     if (inputStream == null) { // version_metadata.json not found
       LOG.info(
           "{} file not found. Reading version from version.txt file",
           FilenameUtils.getName(configFile));
-      Yaml yaml = new Yaml(new CustomClassLoaderConstructor(app.classloader()));
-      String version = yaml.load(app.environment().resourceAsStream("version.txt"));
-      return version;
+      Yaml yaml = new Yaml(new CustomClassLoaderConstructor(environment.classLoader()));
+      return yaml.load(environment.resourceAsStream("version.txt"));
     }
     JsonNode jsonNode = Json.parse(inputStream);
     String buildNumber = jsonNode.get("build_number").asText();
-    String version =
-        jsonNode.get("version_number").asText()
-            + "-"
-            + (NumberUtils.isDigits(buildNumber) ? "b" : "")
-            + buildNumber;
 
-    return version;
+    return jsonNode.get("version_number").asText()
+        + "-"
+        + (NumberUtils.isDigits(buildNumber) ? "b" : "")
+        + buildNumber;
   }
 
-  public void loadSoftwareVersiontoDB(Application app) {
-    String version = getCurrentVersion(app);
+  public void loadSoftwareVersiontoDB(Environment environment) {
+    String version = getCurrentVersion(environment);
     loadConfigToDB(ConfigType.SoftwareVersion, ImmutableMap.of("version", version));
 
     // TODO: Version added to Yugaware metadata, now slowly decomission SoftwareVersion property
@@ -116,14 +113,13 @@ public class ConfigHelper {
     loadConfigToDB(ConfigType.YugawareMetadata, ywMetadata);
   }
 
-  public void loadConfigsToDB(Application app) {
+  public void loadConfigsToDB(Environment environment) {
     for (ConfigType type : ConfigType.values()) {
       if (type.getConfigFile() == null) {
         continue;
       }
-      Yaml yaml = new Yaml(new CustomClassLoaderConstructor(app.classloader()));
-      Map<String, Object> config =
-          yaml.load(app.environment().resourceAsStream(type.getConfigFile()));
+      Yaml yaml = new Yaml(new CustomClassLoaderConstructor(environment.classLoader()));
+      Map<String, Object> config = yaml.load(environment.resourceAsStream(type.getConfigFile()));
       loadConfigToDB(type, config);
     }
   }

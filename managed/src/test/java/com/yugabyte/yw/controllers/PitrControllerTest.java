@@ -5,8 +5,8 @@ package com.yugabyte.yw.controllers;
 import static com.yugabyte.yw.common.AssertHelper.assertAuditEntry;
 import static com.yugabyte.yw.common.AssertHelper.assertBadRequest;
 import static com.yugabyte.yw.common.AssertHelper.assertOk;
-import static com.yugabyte.yw.common.AssertHelper.assertValue;
 import static com.yugabyte.yw.common.AssertHelper.assertPlatformException;
+import static com.yugabyte.yw.common.AssertHelper.assertValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -21,15 +21,13 @@ import static play.test.Helpers.contentAsString;
 import static play.test.Helpers.contextComponents;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.yugabyte.yw.commissioner.Commissioner;
-import com.yugabyte.yw.common.audit.AuditService;
-import com.yugabyte.yw.common.FakeApiHelper;
 import com.yugabyte.yw.common.FakeDBApplication;
 import com.yugabyte.yw.common.ModelFactory;
 import com.yugabyte.yw.common.PlatformServiceException;
+import com.yugabyte.yw.common.audit.AuditService;
 import com.yugabyte.yw.forms.CreatePitrConfigParams;
 import com.yugabyte.yw.forms.RestoreSnapshotScheduleParams;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams;
@@ -48,17 +46,16 @@ import java.util.UUID;
 import junitparams.JUnitParamsRunner;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yb.CommonTypes.TableType;
 import org.yb.client.DeleteSnapshotScheduleResponse;
 import org.yb.client.ListSnapshotSchedulesResponse;
-import org.yb.client.SnapshotScheduleInfo;
 import org.yb.client.SnapshotInfo;
+import org.yb.client.SnapshotScheduleInfo;
 import org.yb.client.YBClient;
-import org.yb.CommonTypes.TableType;
 import org.yb.master.CatalogEntityInfo.SysSnapshotEntryPB.State;
 import play.libs.Json;
 import play.mvc.Http;
@@ -301,6 +298,7 @@ public class PitrControllerTest extends FakeDBApplication {
     List<SnapshotScheduleInfo> scheduleInfoList = new ArrayList<>();
     Map<UUID, SnapshotScheduleInfo> scheduleInfoMap = new HashMap<>();
 
+    long currentTime11 = System.currentTimeMillis();
     UUID scheduleUUID1 = UUID.randomUUID();
     CreatePitrConfigParams params1 = new CreatePitrConfigParams();
     params1.retentionPeriodInSeconds = 7 * 86400L;
@@ -312,7 +310,6 @@ public class PitrControllerTest extends FakeDBApplication {
     PitrConfig pitr1 = PitrConfig.create(scheduleUUID1, params1);
     List<SnapshotInfo> snapshotList1 = new ArrayList<>();
     UUID snapshotUUID11 = UUID.randomUUID();
-    long currentTime11 = System.currentTimeMillis();
     SnapshotInfo snapshot11 =
         new SnapshotInfo(
             snapshotUUID11,
@@ -330,6 +327,7 @@ public class PitrControllerTest extends FakeDBApplication {
     scheduleInfoList.add(schedule1);
     scheduleInfoMap.put(scheduleUUID1, schedule1);
 
+    long currentTime21 = System.currentTimeMillis();
     UUID scheduleUUID2 = UUID.randomUUID();
     CreatePitrConfigParams params2 = new CreatePitrConfigParams();
     params2.retentionPeriodInSeconds = 7 * 86400L;
@@ -341,7 +339,6 @@ public class PitrControllerTest extends FakeDBApplication {
     PitrConfig pitr2 = PitrConfig.create(scheduleUUID2, params2);
     List<SnapshotInfo> snapshotList2 = new ArrayList<>();
     UUID snapshotUUID21 = UUID.randomUUID();
-    long currentTime21 = System.currentTimeMillis();
     SnapshotInfo snapshot21 =
         new SnapshotInfo(
             snapshotUUID21,
@@ -359,6 +356,7 @@ public class PitrControllerTest extends FakeDBApplication {
     scheduleInfoList.add(schedule2);
     scheduleInfoMap.put(scheduleUUID2, schedule2);
 
+    long currentTime3 = System.currentTimeMillis();
     UUID scheduleUUID3 = UUID.randomUUID();
     CreatePitrConfigParams params3 = new CreatePitrConfigParams();
     params3.retentionPeriodInSeconds = 7 * 86400L;
@@ -368,7 +366,6 @@ public class PitrControllerTest extends FakeDBApplication {
     params3.keyspaceName = "cassandra";
     params3.tableType = TableType.YQL_TABLE_TYPE;
     PitrConfig pitr3 = PitrConfig.create(scheduleUUID3, params3);
-    long currentTime3 = System.currentTimeMillis();
     List<SnapshotInfo> snapshotList3 = new ArrayList<>();
     UUID snapshotUUID31 = UUID.randomUUID();
     SnapshotInfo snapshot31 =

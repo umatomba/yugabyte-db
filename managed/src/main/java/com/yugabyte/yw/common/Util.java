@@ -15,6 +15,7 @@ import com.yugabyte.yw.cloud.PublicCloudConstants.OsType;
 import com.yugabyte.yw.commissioner.Common;
 import com.yugabyte.yw.commissioner.Common.CloudType;
 import com.yugabyte.yw.common.utils.Pair;
+import com.yugabyte.yw.controllers.TokenAuthenticator;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams.Cluster;
 import com.yugabyte.yw.forms.UniverseDefinitionTaskParams.ClusterType;
@@ -25,6 +26,7 @@ import com.yugabyte.yw.models.Universe;
 import com.yugabyte.yw.models.Users;
 import com.yugabyte.yw.models.extended.UserWithFeatures;
 import com.yugabyte.yw.models.helpers.NodeDetails;
+import io.ebean.Ebean;
 import io.swagger.annotations.ApiModel;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -892,11 +894,24 @@ public class Util {
   public static String maybeGetEmailFromContext(Context context) {
     String userEmail =
         Optional.ofNullable(context)
-            .map(context1 -> (UserWithFeatures) context1.args.get("user"))
+            .map(context1 -> context1.request().attrs().get(TokenAuthenticator.USER))
             .map(UserWithFeatures::getUser)
             .map(Users::getEmail)
             .map(Object::toString)
             .orElse("Unknown");
     return userEmail;
+  }
+
+  /**
+   * Can be called before YBFlywayInit is initialized to check - if it's fresh install or upgrade.
+   *
+   * @return
+   */
+  public static boolean isFreshInstall() {
+    return !Ebean.getDefaultServer()
+        .createSqlQuery(
+            "SELECT * FROM information_schema.tables WHERE table_name = 'schema_version'")
+        .findOneOrEmpty()
+        .isPresent();
   }
 }

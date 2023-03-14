@@ -59,7 +59,7 @@ public class TokenAuthenticator extends Action.Simple {
 
   public static final TypedKey<Customer> CUSTOMER = TypedKey.create("customer");
 
-  public static final TypedKey<Users> USER = TypedKey.create("user");
+  public static final TypedKey<UserWithFeatures> USER = TypedKey.create("user");
 
   private final Config config;
 
@@ -170,14 +170,9 @@ public class TokenAuthenticator extends Action.Simple {
       if (!checkAccessLevel(endPoint, user, requestType)) {
         return CompletableFuture.completedFuture(Results.forbidden("User doesn't have access"));
       }
-      // TODO: withUsername returns new request that is ignored. Maybe a bug.
-      // req = req.addAttr(Security.USERNAME, user.getEmail());
-      // req = req.addAttr(CUSTOMER, cust);
-      // req = req.addAttr(USER, user);
-
-      ctx.args.put("username", user.getEmail());
-      ctx.args.put("customer", cust);
-      ctx.args.put("user", userService.getUserWithFeatures(cust, user));
+      req = req.addAttr(Security.USERNAME, user.getEmail());
+      req = req.addAttr(CUSTOMER, cust);
+      req = req.addAttr(USER, userService.getUserWithFeatures(cust, user));
     } else {
       // Send Forbidden Response if Authentication Fails.
       return CompletableFuture.completedFuture(Results.forbidden("Unable To Authenticate User"));

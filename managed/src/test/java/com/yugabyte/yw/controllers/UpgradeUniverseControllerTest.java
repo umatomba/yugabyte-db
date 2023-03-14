@@ -440,7 +440,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
             + universe.universeUUID
             + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \"123\"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}");
     ObjectNode bodyJson = Json.newObject().put("upgradeOption", "Non-Rolling");
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);
@@ -480,7 +480,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
             + universe.universeUUID
             + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \"123\"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag2\": \"456\"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag2\": \"456\"}");
     ObjectNode bodyJson = Json.newObject().put("upgradeOption", "Non-Restart");
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);
@@ -528,7 +528,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
     String url =
         "/api/customers/" + customer.uuid + "/universes/" + universeUUID + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \"123\"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}");
     ObjectNode bodyJson = Json.newObject();
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);
@@ -570,7 +570,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
     String url =
         "/api/customers/" + customer.uuid + "/universes/" + universeUUID + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \" 123 \"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \" 456 \"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \" 456 \"}");
     ObjectNode bodyJson = Json.newObject();
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);
@@ -606,7 +606,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
     String url =
         "/api/customers/" + customer.uuid + "/universes/" + universeUUID + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \"123\"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}");
     ObjectNode bodyJson = Json.newObject().put("upgradeOption", "Non-Rolling");
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);
@@ -651,7 +651,7 @@ public class UpgradeUniverseControllerTest extends PlatformGuiceApplicationBaseT
             + universe.universeUUID
             + "/upgrade/gflags";
     JsonNode masterGFlags = Json.parse("{ \"master-flag\": \"123\"}");
-    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}]");
+    JsonNode tserverGFlags = Json.parse("{ \"tserver-flag\": \"456\"}");
     ObjectNode bodyJson = Json.newObject();
     bodyJson.set("masterGFlags", masterGFlags);
     bodyJson.set("tserverGFlags", tserverGFlags);

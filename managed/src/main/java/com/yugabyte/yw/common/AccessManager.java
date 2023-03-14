@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import play.libs.Json;
 
 @Singleton
 @Slf4j
@@ -513,8 +514,7 @@ public class AccessManager extends DevopsBase {
     }
 
     if (Common.CloudType.valueOf(provider.code) == Common.CloudType.aws) {
-      ObjectMapper mapper = play.libs.Json.newDefaultMapper();
-      ArrayNode ret = mapper.getNodeFactory().arrayNode();
+      ArrayNode ret = Json.mapper().getNodeFactory().arrayNode();
       regions
           .stream()
           .map(r -> deleteKey(provider.uuid, r.uuid, keyCode, deleteRemote))
